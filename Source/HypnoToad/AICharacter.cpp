@@ -23,12 +23,15 @@ void AAICharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+	AActor* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	UNavigationSystem::SimpleMoveToActor(Controller, Player);
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Player->);
+
 }
 
 // Called to bind functionality to input
 void AAICharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
 	Super::SetupPlayerInputComponent(InputComponent);
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "inputs");
 
 }
