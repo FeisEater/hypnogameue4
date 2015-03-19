@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GameFramework/Character.h"
+#include "PathPoint.h"
 #include "AICharacter.generated.h"
 
 UCLASS()
@@ -22,5 +23,13 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
-	
+
+	UFUNCTION()
+	void HitPPoint(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY(EditAnywhere, Category = AI)
+	APathPoint* StartPPoint;
+
+private:
+	APathPoint* PPoint;
 };
