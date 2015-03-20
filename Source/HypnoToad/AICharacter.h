@@ -24,12 +24,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	UFUNCTION()
-	void HitPPoint(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
 	UPROPERTY(EditAnywhere, Category = AI)
 	APathPoint* StartPPoint;
 
+	void WaitAndHeadToNextPoint(APathPoint* NextPoint);
+
 private:
 	APathPoint* PPoint;
+	float waitTime;
 };

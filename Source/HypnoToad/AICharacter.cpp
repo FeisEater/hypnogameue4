@@ -9,7 +9,6 @@ AAICharacter::AAICharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AAICharacter::HitPPoint);
 
 }
 
@@ -26,10 +25,9 @@ void AAICharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-	//AActor* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
-	//UNavigationSystem::
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Player->);
+	if (waitTime <= 0)
+		UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
+	else	waitTime -= DeltaTime;
 
 }
 
@@ -40,8 +38,9 @@ void AAICharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 
 }
 
-void AAICharacter::HitPPoint(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AAICharacter::WaitAndHeadToNextPoint(APathPoint* PrevPoint)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Now what?");
-	PPoint = (APathPoint*)PPoint->NextPPoint;
+	waitTime = PrevPoint->waitTime;
+	PPoint = (APathPoint*)PrevPoint->NextPPoint;
+	SetActorRotation(PrevPoint->GetActorRotation());
 }
