@@ -29,7 +29,7 @@ public:
 
 	void WaitAndHeadToNextPoint(APathPoint* NextPoint);
 
-	FRotator* DesiredRotation;
+	FRotator DesiredRotation;
 
 private:
 	APathPoint* PPoint;

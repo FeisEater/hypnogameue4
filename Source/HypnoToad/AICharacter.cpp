@@ -9,7 +9,6 @@ AAICharacter::AAICharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	*DesiredRotation = GetActorRotation();
 }
 
 // Called when the game starts or when spawned
@@ -18,6 +17,7 @@ void AAICharacter::BeginPlay()
 	Super::BeginPlay();
 
 	PPoint = StartPPoint;
+	DesiredRotation = GetActorRotation();
 }
 
 // Called every frame
@@ -34,7 +34,7 @@ void AAICharacter::Tick( float DeltaTime )
 	{
 		waitTime -= DeltaTime;
 		GetCharacterMovement()->bOrientRotationToMovement = false;
-		SetActorRotation(FMath::RInterpTo(GetActorRotation(), *DesiredRotation, DeltaTime, 1.0f));
+		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 10));
 	}
 }
 
@@ -49,5 +49,5 @@ void AAICharacter::WaitAndHeadToNextPoint(APathPoint* PrevPoint)
 {
 	waitTime = PrevPoint->waitTime;
 	PPoint = (APathPoint*)PrevPoint->NextPPoint;
-	*DesiredRotation = PrevPoint->GetActorRotation();
+	DesiredRotation = PrevPoint->GetActorRotation();
 }
