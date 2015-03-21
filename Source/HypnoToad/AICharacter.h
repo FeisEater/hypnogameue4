@@ -29,6 +29,8 @@ public:
 
 	void WaitAndHeadToNextPoint(APathPoint* NextPoint);
 
+	FRotator* DesiredRotation;
+
 private:
 	APathPoint* PPoint;
 	float waitTime;
