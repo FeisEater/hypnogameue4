@@ -2,6 +2,8 @@
 
 #include "HypnoToad.h"
 #include "HypnoToadCharacter.h"
+#include "Engine.h"
+#include "AICharacter.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AHypnoToadCharacter
@@ -40,6 +42,34 @@ AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitial
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+}
+
+// Called every frame
+void AHypnoToadCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	APlayerController* plr = (APlayerController*)GetController();
+	if (plr->WasInputKeyJustPressed(EKeys::F))
+	{
+		const FName TraceTag("MyTraceTag");
+		FCollisionQueryParams Params;
+		GetWorld()->DebugDrawTraceTag = TraceTag;
+		Params.TraceTag = TraceTag;
+		Params.AddIgnoredActor(plr->GetPawn());
+		FHitResult Hit;
+		FVector Start = plr->PlayerCameraManager->GetCameraLocation();
+		FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
+
+		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params) && Hit.Actor.Get()->IsA(AAICharacter::StaticClass()))
+		{
+			Start = GetActorLocation();
+			End = Hit.ImpactPoint;
+			if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params) && (Hit.ImpactPoint - Start).Size() <= 200)
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Hit NPC"));
+		}
+
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////

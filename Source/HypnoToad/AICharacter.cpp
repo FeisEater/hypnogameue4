@@ -34,7 +34,7 @@ void AAICharacter::Tick( float DeltaTime )
 	{
 		waitTime -= DeltaTime;
 		GetCharacterMovement()->bOrientRotationToMovement = false;
-		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 10));
+		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 	}
 }
 
