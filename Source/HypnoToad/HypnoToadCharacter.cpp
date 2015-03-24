@@ -44,6 +44,18 @@ AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitial
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
 
+void SetGUIMode(bool isGUI, APlayerController* plr)
+{
+	plr->bShowMouseCursor = isGUI;
+	plr->bEnableClickEvents = isGUI;
+	plr->bEnableMouseOverEvents = isGUI;
+	//FInputModeGameAndUI input;
+	//input.SetLockMouseToViewport(isGUI);
+	//plr->SetInputMode(input);
+	//if (isGUI)
+	//GEngine->GameViewport->Viewport->LockMouseToViewport(true);
+}
+
 // Called every frame
 void AHypnoToadCharacter::Tick(float DeltaTime)
 {
@@ -66,10 +78,15 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 			Start = GetActorLocation();
 			End = Hit.ImpactPoint;
 			if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params) && (Hit.ImpactPoint - Start).Size() <= 200)
+			{
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Hit NPC"));
+				SetGUIMode(true, plr);
+			}
 		}
 
 	}
+	if (plr->WasInputKeyJustPressed(EKeys::G))
+		SetGUIMode(false, plr);
 }
 
 //////////////////////////////////////////////////////////////////////////
