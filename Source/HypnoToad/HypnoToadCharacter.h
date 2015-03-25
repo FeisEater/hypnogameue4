@@ -29,6 +29,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = UI)
+	//TSubclassOf<UUserWidget> WidgetTemplate;
+
+	//UPROPERTY()
+	//UUserWidget* WidgetInstance;
+
+	/** Show gui element for conversation. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
+	void ShowConversationGUI(bool show);
+
 protected:
 
 	/** Called for forwards/backward input */
@@ -65,5 +75,8 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+private:
+	void SetGUIMode(bool isGUI, APlayerController* plr);
 };
 
