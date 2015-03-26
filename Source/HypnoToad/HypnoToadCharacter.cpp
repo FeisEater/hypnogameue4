@@ -77,11 +77,11 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		FVector Start = plr->PlayerCameraManager->GetCameraLocation();
 		FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
 
-		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params) && Hit.Actor.Get()->IsA(AAICharacter::StaticClass()))
+		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && Hit.Actor.Get()->IsA(AAICharacter::StaticClass()))
 		{
 			Start = GetActorLocation();
 			End = Hit.ImpactPoint;
-			if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params) && (Hit.ImpactPoint - Start).Size() <= 200)
+			if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && (Hit.ImpactPoint - Start).Size() <= 300)
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Hit NPC"));
 				SetGUIMode(true, plr);

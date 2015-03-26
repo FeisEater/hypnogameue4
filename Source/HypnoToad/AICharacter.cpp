@@ -4,6 +4,8 @@
 #include "AICharacter.h"
 #include "Engine.h"
 #include "Runtime/Engine/Classes/AI/Navigation/NavigationPath.h"
+#include "HTriggerSaw.h"
+#include "HypnoToadCharacter.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -19,6 +21,7 @@ void AAICharacter::BeginPlay()
 
 	PPoint = StartPPoint;
 	DesiredRotation = GetActorRotation();
+	triggers.Add(new HTriggerSaw<AHypnoToadCharacter>(this));
 }
 
 // Called every frame
@@ -26,21 +29,24 @@ void AAICharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-	APlayerController* plr = *GetWorld()->GetPlayerControllerIterator();
-	FVector plrLoc = plr->GetCharacter()->GetActorLocation();
-	FVector diff = plrLoc - GetActorLocation();
-	diff.Normalize();
-	float dot = FVector::DotProduct(GetActorRotation().Vector(), diff);
-	if (dot > 0.7f)
+	/*for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-		FHitResult Hit;
+		if (CanSee(*ActorItr))
+			GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, ActorItr->GetName());
+	}*/
 
-		if (GetWorld()->LineTraceSingle(Hit, GetActorLocation(), plrLoc, ECC_Pawn, Params) && Hit.Actor.Get() == plr->GetCharacter())
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("I see you"));
-		}
+	for (HTrigger* t : triggers)
+	{
+		if (t->IsTriggered())
+			GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("Shitlord"));
+	}
+
+	APlayerController* plr = *GetWorld()->GetPlayerControllerIterator();
+
+	if (plr->WasInputKeyJustPressed(EKeys::I))
+	{
+		waitTime = 1;
+		GetController()->StopMovement();
 	}
 
 	if (waitTime <= 0)
@@ -61,6 +67,22 @@ void AAICharacter::Tick( float DeltaTime )
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 	}
+}
+
+bool AAICharacter::CanSee(AActor* actor)
+{
+	FVector diff = actor->GetActorLocation() - GetActorLocation();
+	diff.Normalize();
+	float dot = FVector::DotProduct(GetActorRotation().Vector(), diff);
+	if (dot < 0.7f)
+		return false;
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	FHitResult Hit;
+
+	return	GetWorld()->LineTraceSingle(Hit, GetActorLocation(), actor->GetActorLocation(), ECC_Pawn, Params)
+			&& Hit.Actor.Get() == actor;
 }
 
 // Called to bind functionality to input

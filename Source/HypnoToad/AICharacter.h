@@ -4,6 +4,7 @@
 
 #include "GameFramework/Character.h"
 #include "PathPoint.h"
+#include "HTrigger.h"
 #include "AICharacter.generated.h"
 
 UCLASS()
@@ -29,9 +30,12 @@ public:
 
 	void WaitAndHeadToNextPoint(APathPoint* NextPoint);
 
+	bool CanSee(AActor* actor);
+
 	FRotator DesiredRotation;
 
 private:
 	APathPoint* PPoint;
 	float waitTime;
+	TArray<HTrigger*> triggers;
 };
