@@ -6,6 +6,7 @@
 #include "Runtime/Engine/Classes/AI/Navigation/NavigationPath.h"
 #include "HTriggerSaw.h"
 #include "HypnoToadCharacter.h"
+#include "Runtime/Engine/Classes/Engine/DocumentationActor.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -21,7 +22,7 @@ void AAICharacter::BeginPlay()
 
 	PPoint = StartPPoint;
 	DesiredRotation = GetActorRotation();
-	triggers.Add(new HTriggerSaw<AHypnoToadCharacter>(this));
+	triggers.Add(new HTriggerSaw(this, ADocumentationActor::StaticClass()));
 }
 
 // Called every frame
@@ -67,22 +68,6 @@ void AAICharacter::Tick( float DeltaTime )
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 	}
-}
-
-bool AAICharacter::CanSee(AActor* actor)
-{
-	FVector diff = actor->GetActorLocation() - GetActorLocation();
-	diff.Normalize();
-	float dot = FVector::DotProduct(GetActorRotation().Vector(), diff);
-	if (dot < 0.7f)
-		return false;
-
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-	FHitResult Hit;
-
-	return	GetWorld()->LineTraceSingle(Hit, GetActorLocation(), actor->GetActorLocation(), ECC_Pawn, Params)
-			&& Hit.Actor.Get() == actor;
 }
 
 // Called to bind functionality to input

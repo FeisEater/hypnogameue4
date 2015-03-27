@@ -30,8 +30,6 @@ public:
 
 	void WaitAndHeadToNextPoint(APathPoint* NextPoint);
 
-	bool CanSee(AActor* actor);
-
 	FRotator DesiredRotation;
 
 private:
