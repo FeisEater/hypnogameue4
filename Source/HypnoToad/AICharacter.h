@@ -15,6 +15,7 @@ class HYPNOTOAD_API AAICharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AAICharacter();
+	~AAICharacter();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -32,8 +33,9 @@ public:
 
 	FRotator DesiredRotation;
 
+	float waitTime;	//move to private
+
 private:
 	APathPoint* PPoint;
-	float waitTime;
 	TArray<HTrigger*> triggers;
 };

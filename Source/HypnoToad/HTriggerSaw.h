@@ -11,11 +11,13 @@ class HYPNOTOAD_API HTriggerSaw : public HTrigger
 {
 public:
 	HTriggerSaw(AAICharacter* owner, UClass* cl) : HTrigger(owner), m_class(cl) {}
+
+protected:
 	virtual bool IsTriggered() override;
 
-	bool CanSee(AActor* actor);
-
 private:
+	bool CanSee(AActor* actor);
+	
 	UClass* m_class;
 
 };

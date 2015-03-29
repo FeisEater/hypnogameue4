@@ -3,3 +3,8 @@
 #include "HypnoToad.h"
 #include "HTrigger.h"
 
+void HTrigger::Trigger()
+{
+	if (IsTriggered() && m_action)
+		m_action->Execute();
+}

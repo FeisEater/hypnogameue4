@@ -5,14 +5,20 @@
 #include "Engine.h"
 #include "Runtime/Engine/Classes/AI/Navigation/NavigationPath.h"
 #include "HTriggerSaw.h"
+#include "HActionFreeze.h"
 #include "HypnoToadCharacter.h"
-#include "Runtime/Engine/Classes/Engine/DocumentationActor.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+AAICharacter::~AAICharacter()
+{
+	for (HTrigger* t : triggers)
+		delete t;
 }
 
 // Called when the game starts or when spawned
@@ -22,7 +28,10 @@ void AAICharacter::BeginPlay()
 
 	PPoint = StartPPoint;
 	DesiredRotation = GetActorRotation();
-	triggers.Add(new HTriggerSaw(this, ADocumentationActor::StaticClass()));
+
+	HTrigger* t = new HTriggerSaw(this, AHypnoToadCharacter::StaticClass());
+	t->SetAction(new HActionFreeze(this));
+	triggers.Add(t);
 }
 
 // Called every frame
@@ -30,25 +39,8 @@ void AAICharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-	/*for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-	{
-		if (CanSee(*ActorItr))
-			GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, ActorItr->GetName());
-	}*/
-
 	for (HTrigger* t : triggers)
-	{
-		if (t->IsTriggered())
-			GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("Shitlord"));
-	}
-
-	APlayerController* plr = *GetWorld()->GetPlayerControllerIterator();
-
-	if (plr->WasInputKeyJustPressed(EKeys::I))
-	{
-		waitTime = 1;
-		GetController()->StopMovement();
-	}
+		t->Trigger();
 
 	if (waitTime <= 0)
 	{
@@ -61,6 +53,7 @@ void AAICharacter::Tick( float DeltaTime )
 			prev = v;
 		}
 		GetCharacterMovement()->bOrientRotationToMovement = true;
+		DesiredRotation = GetActorRotation();
 	}
 	else
 	{
