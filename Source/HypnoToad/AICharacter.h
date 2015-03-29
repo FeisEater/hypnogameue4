@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "PathPoint.h"
 #include "HTrigger.h"
+#include "HypnoToadCharacter.h"
 #include "AICharacter.generated.h"
 
 UCLASS()
@@ -31,6 +32,9 @@ public:
 
 	void WaitAndHeadToNextPoint(APathPoint* NextPoint);
 
+	void ActivateConversation(AHypnoToadCharacter* plr);
+	void EndConversation();
+
 	FRotator DesiredRotation;
 
 	float waitTime;	//move to private
@@ -38,4 +42,5 @@ public:
 private:
 	APathPoint* PPoint;
 	TArray<HTrigger*> triggers;
+	bool m_havingConversation;
 };

@@ -47,8 +47,10 @@ AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitial
 	//WidgetInstance->AddToViewport();
 }
 
-void AHypnoToadCharacter::SetGUIMode(bool isGUI, APlayerController* plr)
+void AHypnoToadCharacter::SetGUIMode(bool isGUI, AAICharacter* ai)
 {
+	APlayerController* plr = (APlayerController*)GetController();
+
 	plr->bShowMouseCursor = isGUI;
 	plr->bEnableClickEvents = isGUI;
 	plr->bEnableMouseOverEvents = isGUI;
@@ -68,29 +70,37 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 	APlayerController* plr = (APlayerController*)GetController();
 	if (plr->WasInputKeyJustPressed(EKeys::F))
 	{
-		const FName TraceTag("MyTraceTag");
-		FCollisionQueryParams Params;
-		GetWorld()->DebugDrawTraceTag = TraceTag;
-		Params.TraceTag = TraceTag;
-		Params.AddIgnoredActor(plr->GetPawn());
-		FHitResult Hit;
-		FVector Start = plr->PlayerCameraManager->GetCameraLocation();
-		FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
-
-		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && Hit.Actor.Get()->IsA(AAICharacter::StaticClass()))
+		if (m_conversationWith)
 		{
-			Start = GetActorLocation();
-			End = Hit.ImpactPoint;
-			if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && (Hit.ImpactPoint - Start).Size() <= 300)
+			m_conversationWith->EndConversation();
+			m_conversationWith = NULL;
+
+			SetGUIMode(false);
+		}
+		else
+		{
+			const FName TraceTag("MyTraceTag");
+			FCollisionQueryParams Params;
+			GetWorld()->DebugDrawTraceTag = TraceTag;
+			Params.TraceTag = TraceTag;
+			Params.AddIgnoredActor(plr->GetPawn());
+			FHitResult Hit;
+			FVector Start = plr->PlayerCameraManager->GetCameraLocation();
+			FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
+			if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && Hit.Actor.Get()->IsA(AAICharacter::StaticClass()))
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Hit NPC"));
-				SetGUIMode(true, plr);
+				AAICharacter* ai = (AAICharacter*)Hit.Actor.Get();
+				Start = GetActorLocation();
+				End = Hit.ImpactPoint;
+				if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && (Hit.ImpactPoint - Start).Size() <= 300 && Hit.Actor.Get() == ai)
+				{
+					m_conversationWith = ai;
+					ai->ActivateConversation(this);
+					SetGUIMode(true, ai);
+				}
 			}
 		}
-
 	}
-	if (plr->WasInputKeyJustPressed(EKeys::G))
-		SetGUIMode(false, plr);
 }
 
 //////////////////////////////////////////////////////////////////////////

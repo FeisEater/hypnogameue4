@@ -28,10 +28,11 @@ void AAICharacter::BeginPlay()
 
 	PPoint = StartPPoint;
 	DesiredRotation = GetActorRotation();
+	m_havingConversation = false;
 
-	HTrigger* t = new HTriggerSaw(this, AHypnoToadCharacter::StaticClass());
-	t->SetAction(new HActionFreeze(this));
-	triggers.Add(t);
+	//HTrigger* t = new HTriggerSaw(this, AHypnoToadCharacter::StaticClass());
+	//t->SetAction(new HActionFreeze(this));
+	//triggers.Add(t);
 }
 
 // Called every frame
@@ -42,7 +43,7 @@ void AAICharacter::Tick( float DeltaTime )
 	for (HTrigger* t : triggers)
 		t->Trigger();
 
-	if (waitTime <= 0)
+	if (waitTime <= 0 && !m_havingConversation)
 	{
 		UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 		UNavigationPath* path = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), PPoint);
@@ -75,4 +76,23 @@ void AAICharacter::WaitAndHeadToNextPoint(APathPoint* PrevPoint)
 	waitTime = PrevPoint->waitTime;
 	PPoint = (APathPoint*)PrevPoint->NextPPoint;
 	DesiredRotation = PrevPoint->GetActorRotation();
+}
+
+void AAICharacter::ActivateConversation(AHypnoToadCharacter* plr)
+{
+	GetController()->StopMovement();
+	m_havingConversation = true;
+	
+	FVector vec = plr->GetActorLocation() - GetActorLocation();
+	vec.Normalize();
+	DesiredRotation = vec.Rotation();
+	vec = DesiredRotation.Euler();
+	vec.X = 0;
+	vec.Y = 0;
+	DesiredRotation = FRotator::MakeFromEuler(vec);
+}
+
+void AAICharacter::EndConversation()
+{
+	m_havingConversation = false;
 }

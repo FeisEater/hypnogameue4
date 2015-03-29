@@ -3,6 +3,8 @@
 #include "GameFramework/Character.h"
 #include "HypnoToadCharacter.generated.h"
 
+class AAICharacter;
+
 UCLASS(config=Game)
 class AHypnoToadCharacter : public ACharacter
 {
@@ -77,6 +79,8 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 private:
-	void SetGUIMode(bool isGUI, APlayerController* plr);
+	void SetGUIMode(bool isGUI, AAICharacter* ai = NULL);
+
+	AAICharacter* m_conversationWith;
 };
 
