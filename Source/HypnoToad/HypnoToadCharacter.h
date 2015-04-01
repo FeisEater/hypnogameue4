@@ -37,6 +37,10 @@ public:
 	//UPROPERTY()
 	//UUserWidget* WidgetInstance;
 
+	/** Texture for suggestion stickers */
+	UPROPERTY(EditAnywhere, Category = GamePlay)
+	UMaterialInterface* StickerMaterial;
+
 	/** Show gui element for conversation. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowConversationGUI(bool show);

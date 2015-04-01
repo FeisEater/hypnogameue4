@@ -101,6 +101,22 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 			}
 		}
 	}
+	
+	if (plr->WasInputKeyJustPressed(EKeys::E))
+	{
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(plr->GetPawn());
+		FHitResult Hit;
+		FVector Start = plr->PlayerCameraManager->GetCameraLocation();
+		FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
+		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_WorldStatic, Params) && Hit.ImpactNormal.Z < 0.5f && Hit.ImpactNormal.Z > -0.5f)
+		{
+			FRotator rot = (-Hit.ImpactNormal).Rotation();
+			rot.Roll = 90;
+			UGameplayStatics::SpawnDecalAtLocation(GetWorld(), StickerMaterial, FVector(30,30,30), Hit.ImpactPoint, rot);
+		}
+	}
+
 }
 
 //////////////////////////////////////////////////////////////////////////
