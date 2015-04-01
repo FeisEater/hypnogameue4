@@ -26,6 +26,6 @@ bool HTriggerSaw::CanSee(AActor* actor)
 	Params.AddIgnoredActor(m_owner);
 	FHitResult Hit;
 
-	return	m_owner->GetWorld()->LineTraceSingle(Hit, m_owner->GetActorLocation(), actor->GetActorLocation(), ECC_Pawn, Params)
+	return	m_owner->GetWorld()->LineTraceSingle(Hit, m_owner->GetActorLocation(), actor->GetActorLocation(), ECC_Visibility, Params)
 		&& Hit.Actor.Get() == actor;
 }

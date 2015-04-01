@@ -30,9 +30,9 @@ void AAICharacter::BeginPlay()
 	DesiredRotation = GetActorRotation();
 	m_havingConversation = false;
 
-	//HTrigger* t = new HTriggerSaw(this, AHypnoToadCharacter::StaticClass());
-	//t->SetAction(new HActionFreeze(this));
-	//triggers.Add(t);
+	HTrigger* t = new HTriggerSaw(this, ADecalActor::StaticClass());
+	t->SetAction(new HActionFreeze(this));
+	triggers.Add(t);
 }
 
 // Called every frame

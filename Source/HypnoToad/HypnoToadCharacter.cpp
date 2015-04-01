@@ -109,11 +109,15 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		FHitResult Hit;
 		FVector Start = plr->PlayerCameraManager->GetCameraLocation();
 		FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
-		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_WorldStatic, Params) && Hit.ImpactNormal.Z < 0.5f && Hit.ImpactNormal.Z > -0.5f)
+		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && Hit.ImpactNormal.Z < 0.5f && Hit.ImpactNormal.Z > -0.5f)
 		{
 			FRotator rot = (-Hit.ImpactNormal).Rotation();
 			rot.Roll = 90;
-			UGameplayStatics::SpawnDecalAtLocation(GetWorld(), StickerMaterial, FVector(30,30,30), Hit.ImpactPoint, rot);
+			ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.ImpactPoint, rot);
+			decal->GetDecal()->SetDecalMaterial(StickerMaterial);
+			decal->SetActorScale3D(FVector(30,30,30));
+			decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 		}
 	}
 
@@ -177,7 +181,7 @@ void AHypnoToadCharacter::LookUpAtRate(float Rate)
 
 void AHypnoToadCharacter::MoveForward(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f))
+	if ((Controller != NULL) && (Value != 0.0f) && !m_conversationWith)
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -191,7 +195,7 @@ void AHypnoToadCharacter::MoveForward(float Value)
 
 void AHypnoToadCharacter::MoveRight(float Value)
 {
-	if ( (Controller != NULL) && (Value != 0.0f) )
+	if ((Controller != NULL) && (Value != 0.0f) && !m_conversationWith)
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
