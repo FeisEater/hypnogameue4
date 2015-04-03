@@ -35,6 +35,10 @@ public:
 	void ActivateConversation(AHypnoToadCharacter* plr);
 	void EndConversation();
 
+	void Hypnotize(AHypnoToadCharacter* plr);
+	void EndHypnotization();
+	bool IsHypnotized();
+
 	FRotator DesiredRotation;
 
 	float waitTime;	//move to private
@@ -43,4 +47,5 @@ private:
 	APathPoint* PPoint;
 	TArray<HTrigger*> triggers;
 	bool m_havingConversation;
+	AHypnoToadCharacter* m_hypnotizedBy;
 };

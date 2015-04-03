@@ -84,7 +84,8 @@ public:
 
 private:
 	void SetGUIMode(bool isGUI, AAICharacter* ai = NULL);
-
+	AAICharacter* InterractsWithNPC(float range);
 	AAICharacter* m_conversationWith;
+	AAICharacter* m_hypnotized;
 };
 

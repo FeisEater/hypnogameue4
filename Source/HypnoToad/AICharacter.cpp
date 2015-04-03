@@ -29,6 +29,7 @@ void AAICharacter::BeginPlay()
 	PPoint = StartPPoint;
 	DesiredRotation = GetActorRotation();
 	m_havingConversation = false;
+	m_hypnotizedBy = NULL;
 
 	HTrigger* t = new HTriggerSaw(this, ADecalActor::StaticClass());
 	t->SetAction(new HActionFreeze(this));
@@ -43,7 +44,7 @@ void AAICharacter::Tick( float DeltaTime )
 	for (HTrigger* t : triggers)
 		t->Trigger();
 
-	if (waitTime <= 0 && !m_havingConversation)
+	if (waitTime <= 0 && !m_havingConversation && !m_hypnotizedBy)
 	{
 		UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 		UNavigationPath* path = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), PPoint);
@@ -56,11 +57,17 @@ void AAICharacter::Tick( float DeltaTime )
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		DesiredRotation = GetActorRotation();
 	}
-	else
+	else if (!m_hypnotizedBy)
 	{
 		waitTime -= DeltaTime;
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
+	}
+	else if (m_hypnotizedBy)
+	{
+		UNavigationSystem::SimpleMoveToActor(Controller, m_hypnotizedBy);
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		DesiredRotation = GetActorRotation();
 	}
 }
 
@@ -95,4 +102,19 @@ void AAICharacter::ActivateConversation(AHypnoToadCharacter* plr)
 void AAICharacter::EndConversation()
 {
 	m_havingConversation = false;
+}
+
+void AAICharacter::Hypnotize(AHypnoToadCharacter* plr)
+{
+	m_hypnotizedBy = plr;
+}
+
+void AAICharacter::EndHypnotization()
+{
+	m_hypnotizedBy = NULL;
+}
+
+bool AAICharacter::IsHypnotized()
+{
+	return m_hypnotizedBy != NULL;
 }

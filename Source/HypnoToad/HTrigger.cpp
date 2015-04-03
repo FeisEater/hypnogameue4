@@ -2,9 +2,10 @@
 
 #include "HypnoToad.h"
 #include "HTrigger.h"
+#include "AICharacter.h"
 
 void HTrigger::Trigger()
 {
-	if (IsTriggered() && m_action)
+	if (IsTriggered() && m_action && !m_owner->IsHypnotized())
 		m_action->Execute();
 }

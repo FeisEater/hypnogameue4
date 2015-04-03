@@ -79,26 +79,30 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		}
 		else
 		{
-			const FName TraceTag("MyTraceTag");
-			FCollisionQueryParams Params;
-			GetWorld()->DebugDrawTraceTag = TraceTag;
-			Params.TraceTag = TraceTag;
-			Params.AddIgnoredActor(plr->GetPawn());
-			FHitResult Hit;
-			FVector Start = plr->PlayerCameraManager->GetCameraLocation();
-			FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
-			if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && Hit.Actor.Get()->IsA(AAICharacter::StaticClass()))
+			AAICharacter* ai = InterractsWithNPC(300);
+			if (ai)
 			{
-				AAICharacter* ai = (AAICharacter*)Hit.Actor.Get();
-				Start = GetActorLocation();
-				End = Hit.ImpactPoint;
-				if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && (Hit.ImpactPoint - Start).Size() <= 300 && Hit.Actor.Get() == ai)
-				{
-					m_conversationWith = ai;
-					ai->ActivateConversation(this);
-					SetGUIMode(true, ai);
-				}
+				m_conversationWith = ai;
+				ai->ActivateConversation(this);
+				SetGUIMode(true, ai);
 			}
+		}
+	}
+
+	if (plr->WasInputKeyJustPressed(EKeys::Q))
+	{
+		AAICharacter* ai = InterractsWithNPC(200);
+		if (ai && !m_hypnotized)
+		{
+			m_hypnotized = ai;
+			ai->Hypnotize(this);
+			GetCharacterMovement()->MaxWalkSpeed = 200;
+		}
+		else if (m_hypnotized)
+		{
+			m_hypnotized->EndHypnotization();
+			m_hypnotized = NULL;
+			GetCharacterMovement()->MaxWalkSpeed = 600;
 		}
 	}
 	
@@ -111,16 +115,42 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
 		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && Hit.ImpactNormal.Z < 0.5f && Hit.ImpactNormal.Z > -0.5f)
 		{
-			FRotator rot = (-Hit.ImpactNormal).Rotation();
-			rot.Roll = 90;
-			ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.ImpactPoint, rot);
-			decal->GetDecal()->SetDecalMaterial(StickerMaterial);
-			decal->SetActorScale3D(FVector(30,30,30));
-			decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-			decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+			if (Hit.Actor.Get()->IsA(ADecalActor::StaticClass()))
+			{
+				GetWorld()->DestroyActor(Hit.Actor.Get());
+			}
+			else
+			{
+				FRotator rot = (-Hit.ImpactNormal).Rotation();
+				rot.Roll = 90;
+				ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.ImpactPoint, rot);
+				decal->GetDecal()->SetDecalMaterial(StickerMaterial);
+				decal->SetActorScale3D(FVector(30, 30, 30));
+				decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+				decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+			}
 		}
 	}
 
+}
+
+AAICharacter* AHypnoToadCharacter::InterractsWithNPC(float range)
+{
+	APlayerController* plr = (APlayerController*)GetController();
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(plr->GetPawn());
+	FHitResult Hit;
+	FVector Start = plr->PlayerCameraManager->GetCameraLocation();
+	FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * (range + 400));
+	if (!GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) || !Hit.Actor.Get()->IsA(AAICharacter::StaticClass()))
+		return NULL;
+
+	AAICharacter* ai = (AAICharacter*)Hit.Actor.Get();
+	Start = GetActorLocation();
+	End = Hit.ImpactPoint;
+	if (!GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) || (Hit.ImpactPoint - Start).Size() > range || Hit.Actor.Get() != ai)
+		return NULL;
+	return ai;
 }
 
 //////////////////////////////////////////////////////////////////////////
