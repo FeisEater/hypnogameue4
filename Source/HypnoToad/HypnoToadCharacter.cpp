@@ -150,7 +150,11 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		Dir = Dir.RotateAngleAxis(radius * FMath::Sin(angle), Up);
 		Dir = Dir.RotateAngleAxis(radius * FMath::Cos(angle), Right);
 		FVector End = Start + (Dir * 1000000);
-		GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params);
+		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params))
+		{
+			if (Hit.Component.Get()->IsA(UModelComponent::StaticClass()))
+				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Hit brush"));
+		}
 
 	}
 
