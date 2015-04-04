@@ -132,6 +132,27 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		}
 	}
 
+	if (plr->WasInputKeyJustPressed(EKeys::LeftMouseButton))
+	{
+		const FName TraceTag("MyTraceTag");
+		GetWorld()->DebugDrawTraceTag = TraceTag;
+		FCollisionQueryParams Params;
+		Params.TraceTag = TraceTag;
+		Params.AddIgnoredActor(plr->GetPawn());
+		FHitResult Hit;
+		FVector Start = GetActorLocation();
+		FVector Dir = plr->PlayerCameraManager->GetCameraRotation().Vector();
+		FVector Up, Right;
+		Dir.FindBestAxisVectors(Up, Right);
+		float angle = FMath::FRandRange(0, 2 * PI);
+		float radius = FMath::FRandRange(0, 10);
+		Dir = Dir.RotateAngleAxis(radius * FMath::Sin(angle), Up);
+		Dir = Dir.RotateAngleAxis(radius * FMath::Cos(angle), Right);
+		FVector End = Start + (Dir * 1000);
+		GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params);
+
+	}
+
 }
 
 AAICharacter* AHypnoToadCharacter::InterractsWithNPC(float range)

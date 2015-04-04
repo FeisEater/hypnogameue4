@@ -30,6 +30,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = AI)
 	APathPoint* StartPPoint;
 
+	APathPoint* GetNextPPoint();
 	void WaitAndHeadToNextPoint(APathPoint* NextPoint);
 
 	void ActivateConversation(AHypnoToadCharacter* plr);

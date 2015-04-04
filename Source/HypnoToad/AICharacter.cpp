@@ -48,11 +48,14 @@ void AAICharacter::Tick( float DeltaTime )
 	{
 		UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 		UNavigationPath* path = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), PPoint);
-		FVector prev = path->PathPoints[0];
-		for (FVector v : path->PathPoints)
+		if (path && path->PathPoints.Num() > 0)
 		{
-			DrawDebugLine(GetWorld(), prev, v, FColor::Green);
-			prev = v;
+			FVector prev = path->PathPoints[0];
+			for (FVector v : path->PathPoints)
+			{
+				DrawDebugLine(GetWorld(), prev, v, FColor::Green);
+				prev = v;
+			}
 		}
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		DesiredRotation = GetActorRotation();
@@ -76,6 +79,11 @@ void AAICharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 {
 	Super::SetupPlayerInputComponent(InputComponent);
 
+}
+
+APathPoint* AAICharacter::GetNextPPoint()
+{
+	return PPoint;
 }
 
 void AAICharacter::WaitAndHeadToNextPoint(APathPoint* PrevPoint)

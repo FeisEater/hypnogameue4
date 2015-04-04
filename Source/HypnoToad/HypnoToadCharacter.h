@@ -87,5 +87,6 @@ private:
 	AAICharacter* InterractsWithNPC(float range);
 	AAICharacter* m_conversationWith;
 	AAICharacter* m_hypnotized;
+	float m_i;
 };
 

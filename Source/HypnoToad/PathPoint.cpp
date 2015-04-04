@@ -33,9 +33,9 @@ void APathPoint::Tick( float DeltaTime )
 
 void APathPoint::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->IsA(AAICharacter::StaticClass()))
-	{
-		AAICharacter* ai = (AAICharacter*)OtherActor;
+	if (!OtherActor->IsA(AAICharacter::StaticClass()))
+		return;
+	AAICharacter* ai = (AAICharacter*)OtherActor;
+	if (ai->GetNextPPoint() == this)
 		ai->WaitAndHeadToNextPoint(this);
-	}
 }
