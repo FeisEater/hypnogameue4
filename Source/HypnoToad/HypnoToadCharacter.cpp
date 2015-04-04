@@ -128,6 +128,7 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 				decal->SetActorScale3D(FVector(30, 30, 30));
 				decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 				decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+				decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 			}
 		}
 	}
@@ -148,7 +149,7 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		float radius = FMath::FRandRange(0, 10);
 		Dir = Dir.RotateAngleAxis(radius * FMath::Sin(angle), Up);
 		Dir = Dir.RotateAngleAxis(radius * FMath::Cos(angle), Right);
-		FVector End = Start + (Dir * 1000);
+		FVector End = Start + (Dir * 1000000);
 		GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params);
 
 	}
