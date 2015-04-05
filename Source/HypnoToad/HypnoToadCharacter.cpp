@@ -62,6 +62,11 @@ void AHypnoToadCharacter::SetGUIMode(bool isGUI, AAICharacter* ai)
 	//GEngine->GameViewport->Viewport->LockMouseToViewport(true);
 }
 
+bool HitBrush(FHitResult &Hit)
+{
+	return Hit.Component.Get()->IsA(UModelComponent::StaticClass());
+}
+
 // Called every frame
 void AHypnoToadCharacter::Tick(float DeltaTime)
 {
@@ -115,7 +120,7 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
 		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && Hit.ImpactNormal.Z < 0.5f && Hit.ImpactNormal.Z > -0.5f)
 		{
-			if (Hit.Actor.Get()->IsA(ADecalActor::StaticClass()))
+			if (!HitBrush(Hit) && Hit.Actor.Get()->IsA(ADecalActor::StaticClass()))
 			{
 				GetWorld()->DestroyActor(Hit.Actor.Get());
 			}
@@ -152,8 +157,8 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		FVector End = Start + (Dir * 1000000);
 		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params))
 		{
-			if (Hit.Component.Get()->IsA(UModelComponent::StaticClass()))
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Hit brush"));
+			if (!HitBrush(Hit) && Hit.Actor->IsA(AAICharacter::StaticClass()))
+				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ow"));
 		}
 
 	}
@@ -168,7 +173,12 @@ AAICharacter* AHypnoToadCharacter::InterractsWithNPC(float range)
 	FHitResult Hit;
 	FVector Start = plr->PlayerCameraManager->GetCameraLocation();
 	FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * (range + 400));
-	if (!GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) || !Hit.Actor.Get()->IsA(AAICharacter::StaticClass()))
+	
+	if (!GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params))
+		return NULL;
+	if (HitBrush(Hit))
+		return NULL;
+	if (!Hit.Actor.Get()->IsA(AAICharacter::StaticClass()))
 		return NULL;
 
 	AAICharacter* ai = (AAICharacter*)Hit.Actor.Get();
