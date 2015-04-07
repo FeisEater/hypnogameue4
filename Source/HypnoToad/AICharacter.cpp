@@ -34,6 +34,8 @@ void AAICharacter::BeginPlay()
 	HTrigger* t = new HTriggerSaw(this, ADecalActor::StaticClass());
 	t->SetAction(new HActionFreeze(this));
 	triggers.Add(t);
+
+	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 }
 
 // Called every frame
@@ -46,7 +48,7 @@ void AAICharacter::Tick( float DeltaTime )
 
 	if (waitTime <= 0 && !m_havingConversation && !m_hypnotizedBy)
 	{
-		UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
+		//UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 		UNavigationPath* path = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), PPoint);
 		if (path && path->PathPoints.Num() > 0)
 		{
@@ -63,6 +65,8 @@ void AAICharacter::Tick( float DeltaTime )
 	else if (!m_hypnotizedBy)
 	{
 		waitTime -= DeltaTime;
+		if (waitTime <= 0)
+			UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 	}
