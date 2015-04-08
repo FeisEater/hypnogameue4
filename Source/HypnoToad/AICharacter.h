@@ -31,6 +31,7 @@ public:
 	APathPoint* StartPPoint;
 
 	APathPoint* GetNextPPoint();
+	void SetNextPPoint(APathPoint* pp);
 	void WaitAndHeadToNextPoint(APathPoint* NextPoint);
 
 	void ActivateConversation(AHypnoToadCharacter* plr);
@@ -44,9 +45,13 @@ public:
 
 	float waitTime;	//move to private
 
+	UFUNCTION()
+	void OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 private:
 	APathPoint* PPoint;
 	TArray<HTrigger*> triggers;
 	bool m_havingConversation;
 	AHypnoToadCharacter* m_hypnotizedBy;
+	float m_rebuildPathTime;
 };

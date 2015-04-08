@@ -14,7 +14,9 @@ APathPoint::APathPoint()
 	MyCollisionComp = CreateDefaultSubobject<USphereComponent>(FName(TEXT("CollisionComponent")));
 	MyCollisionComp->RelativeLocation = FVector::ZeroVector;
 	MyCollisionComp->SetSphereRadius(20.0f);
+	RootComponent = MyCollisionComp;
 	MyCollisionComp->OnComponentBeginOverlap.AddDynamic(this, &APathPoint::OnOverlapBegin);
+
 }
 
 // Called when the game starts or when spawned

@@ -4,8 +4,8 @@
 #include "AICharacter.h"
 #include "Engine.h"
 #include "Runtime/Engine/Classes/AI/Navigation/NavigationPath.h"
-#include "HTriggerSaw.h"
-#include "HActionFreeze.h"
+#include "HTriggerSawHypnotizedNpc.h"
+#include "HActionWakeNpc.h"
 #include "HypnoToadCharacter.h"
 
 // Sets default values
@@ -31,11 +31,14 @@ void AAICharacter::BeginPlay()
 	m_havingConversation = false;
 	m_hypnotizedBy = NULL;
 
-	HTrigger* t = new HTriggerSaw(this, ADecalActor::StaticClass());
-	t->SetAction(new HActionFreeze(this));
+	HTrigger* t = new HTriggerSawHypnotizedNpc(this);
+	t->SetAction(new HActionWakeNpc(this));
 	triggers.Add(t);
 
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
+
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AAICharacter::OnOverlapBegin);
+
 }
 
 // Called every frame
@@ -48,14 +51,19 @@ void AAICharacter::Tick( float DeltaTime )
 
 	if (waitTime <= 0 && !m_havingConversation && !m_hypnotizedBy)
 	{
-		//UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
+		m_rebuildPathTime -= DeltaTime;
+		if (m_rebuildPathTime <= 0)
+		{
+			UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
+			m_rebuildPathTime = 0.5f;
+		}
 		UNavigationPath* path = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), PPoint);
 		if (path && path->PathPoints.Num() > 0)
 		{
 			FVector prev = path->PathPoints[0];
 			for (FVector v : path->PathPoints)
 			{
-				DrawDebugLine(GetWorld(), prev, v, FColor::Green);
+				DrawDebugLine(GetWorld(), prev, v, FColor::Green, false, -1.f, -1, 3);
 				prev = v;
 			}
 		}
@@ -90,9 +98,16 @@ APathPoint* AAICharacter::GetNextPPoint()
 	return PPoint;
 }
 
+void AAICharacter::SetNextPPoint(APathPoint* pp)
+{
+	PPoint = pp;
+	m_rebuildPathTime = 0;
+}
+
 void AAICharacter::WaitAndHeadToNextPoint(APathPoint* PrevPoint)
 {
 	waitTime = PrevPoint->waitTime;
+	m_rebuildPathTime = 0;
 	PPoint = (APathPoint*)PrevPoint->NextPPoint;
 	DesiredRotation = PrevPoint->GetActorRotation();
 }
@@ -129,4 +144,12 @@ void AAICharacter::EndHypnotization()
 bool AAICharacter::IsHypnotized()
 {
 	return m_hypnotizedBy != NULL;
+}
+
+void AAICharacter::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!OtherActor->IsA(AAICharacter::StaticClass()))
+		return;
+	AAICharacter* ai = (AAICharacter*)OtherActor;
+	ai->EndHypnotization();
 }
