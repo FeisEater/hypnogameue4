@@ -30,6 +30,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = AI)
 	APathPoint* StartPPoint;
 
+	void Shoot();
+
 	APathPoint* GetNextPPoint();
 	void SetNextPPoint(APathPoint* pp);
 	void WaitAndHeadToNextPoint(APathPoint* NextPoint);
@@ -40,6 +42,7 @@ public:
 	void Hypnotize(AHypnoToadCharacter* plr);
 	void EndHypnotization();
 	bool IsHypnotized();
+	void StayStillWhileHypnotized();
 
 	FRotator DesiredRotation;
 
@@ -53,5 +56,6 @@ private:
 	TArray<HTrigger*> triggers;
 	bool m_havingConversation;
 	AHypnoToadCharacter* m_hypnotizedBy;
+	bool m_followsHypnotizer;
 	float m_rebuildPathTime;
 };

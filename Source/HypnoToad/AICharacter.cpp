@@ -78,11 +78,40 @@ void AAICharacter::Tick( float DeltaTime )
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 	}
-	else if (m_hypnotizedBy)
+	else if (m_hypnotizedBy && m_followsHypnotizer)
 	{
 		UNavigationSystem::SimpleMoveToActor(Controller, m_hypnotizedBy);
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		DesiredRotation = GetActorRotation();
+	}
+
+	APlayerController* plr = GetWorld()->GetFirstPlayerController();
+	if (plr->WasInputKeyJustPressed(EKeys::LeftMouseButton))
+		Shoot();
+
+}
+
+void AAICharacter::Shoot()
+{
+	const FName TraceTag("MyTraceTag");
+	GetWorld()->DebugDrawTraceTag = TraceTag;
+	FCollisionQueryParams Params;
+	Params.TraceTag = TraceTag;
+	Params.AddIgnoredActor(this);
+	FHitResult Hit;
+	FVector Start = GetActorLocation();
+	FVector Dir = GetActorRotation().Vector();
+	FVector Up, Right;
+	Dir.FindBestAxisVectors(Up, Right);
+	float angle = FMath::FRandRange(0, 2 * PI);
+	float radius = FMath::FRandRange(0, 10);
+	Dir = Dir.RotateAngleAxis(radius * FMath::Sin(angle), Up);
+	Dir = Dir.RotateAngleAxis(radius * FMath::Cos(angle), Right);
+	FVector End = Start + (Dir * 1000000);
+	if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params))
+	{
+		if (!Hit.Component.Get()->IsA(UModelComponent::StaticClass()) && Hit.Actor->IsA(AAICharacter::StaticClass()))
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ow"));
 	}
 }
 
@@ -134,11 +163,19 @@ void AAICharacter::EndConversation()
 void AAICharacter::Hypnotize(AHypnoToadCharacter* plr)
 {
 	m_hypnotizedBy = plr;
+	m_followsHypnotizer = true;
 }
 
 void AAICharacter::EndHypnotization()
 {
 	m_hypnotizedBy = NULL;
+	m_followsHypnotizer = false;
+}
+
+void AAICharacter::StayStillWhileHypnotized()
+{
+	m_followsHypnotizer = false;
+	GetController()->StopMovement();
 }
 
 bool AAICharacter::IsHypnotized()

@@ -105,7 +105,7 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		}
 		else if (m_hypnotized)
 		{
-			m_hypnotized->EndHypnotization();
+			m_hypnotized->StayStillWhileHypnotized();
 			m_hypnotized = NULL;
 			GetCharacterMovement()->MaxWalkSpeed = 600;
 		}
@@ -136,31 +136,6 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 				decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 			}
 		}
-	}
-
-	if (plr->WasInputKeyJustPressed(EKeys::LeftMouseButton))
-	{
-		const FName TraceTag("MyTraceTag");
-		GetWorld()->DebugDrawTraceTag = TraceTag;
-		FCollisionQueryParams Params;
-		Params.TraceTag = TraceTag;
-		Params.AddIgnoredActor(plr->GetPawn());
-		FHitResult Hit;
-		FVector Start = GetActorLocation();
-		FVector Dir = plr->PlayerCameraManager->GetCameraRotation().Vector();
-		FVector Up, Right;
-		Dir.FindBestAxisVectors(Up, Right);
-		float angle = FMath::FRandRange(0, 2 * PI);
-		float radius = FMath::FRandRange(0, 10);
-		Dir = Dir.RotateAngleAxis(radius * FMath::Sin(angle), Up);
-		Dir = Dir.RotateAngleAxis(radius * FMath::Cos(angle), Right);
-		FVector End = Start + (Dir * 1000000);
-		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params))
-		{
-			if (!HitBrush(Hit) && Hit.Actor->IsA(AAICharacter::StaticClass()))
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ow"));
-		}
-
 	}
 
 }

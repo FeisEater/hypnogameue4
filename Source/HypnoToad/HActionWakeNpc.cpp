@@ -23,7 +23,11 @@ void HActionWakeNpc::Execute()
 
 bool HActionWakeNpc::CanSee(AAICharacter* actor)
 {
+	if (!actor->IsHypnotized())
+		return false;
 	FVector diff = actor->GetActorLocation() - m_owner->GetActorLocation();
+	if (diff.Size() > 2000)
+		return false;
 	diff.Normalize();
 	float dot = FVector::DotProduct(m_owner->GetActorRotation().Vector(), diff);
 	if (dot < 0.7f)
@@ -34,5 +38,5 @@ bool HActionWakeNpc::CanSee(AAICharacter* actor)
 	FHitResult Hit;
 
 	return	m_owner->GetWorld()->LineTraceSingle(Hit, m_owner->GetActorLocation(), actor->GetActorLocation(), ECC_Visibility, Params)
-		&& Hit.Actor.Get() == actor && actor->IsHypnotized();
+		&& Hit.Actor.Get() == actor;
 }
