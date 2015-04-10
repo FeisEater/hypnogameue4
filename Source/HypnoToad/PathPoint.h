@@ -32,4 +32,9 @@ public:
 	/** called when something enters the sphere component */
 	UFUNCTION()
 	void OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	bool GotVisited();
+
+private:
+	bool m_gotVisited;
 };

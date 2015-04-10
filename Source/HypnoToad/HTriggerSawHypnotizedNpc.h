@@ -15,7 +15,4 @@ public:
 protected:
 	virtual bool IsTriggered() override;
 
-private:
-	bool CanSee(AAICharacter* actor);
-
 };

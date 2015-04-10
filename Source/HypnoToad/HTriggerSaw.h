@@ -16,8 +16,6 @@ protected:
 	virtual bool IsTriggered() override;
 
 private:
-	bool CanSee(AActor* actor);
-	
 	UClass* m_class;
 
 };

@@ -18,6 +18,5 @@ public:
 	virtual void Execute() override;
 
 private:
-	bool CanSee(AAICharacter* actor);
 	class APathPoint* m_detourPoint;
 };

@@ -39,6 +39,9 @@ void AAICharacter::BeginPlay()
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AAICharacter::OnOverlapBegin);
 
+	//m_currentEnemy = GetWorld()->GetFirstPlayerController()->GetCharacter();
+	//m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
+	//m_timeToCare = 5;
 }
 
 // Called every frame
@@ -49,7 +52,39 @@ void AAICharacter::Tick( float DeltaTime )
 	for (HTrigger* t : triggers)
 		t->Trigger();
 
-	if (waitTime <= 0 && !m_havingConversation && !m_hypnotizedBy)
+	if (m_rateOfFire > 0)
+		m_rateOfFire -= DeltaTime;
+
+	if (m_currentEnemy)
+	{
+		m_rebuildPathTime -= DeltaTime;
+		if ((GetActorLocation() - m_currentEnemy->GetActorLocation()).Size() < 700 && CanSee(m_currentEnemy))
+			GetController()->StopMovement();
+		else
+		{
+			if (m_rebuildPathTime <= 0)
+				UNavigationSystem::SimpleMoveToLocation(Controller, m_lastEnemyPosition);
+		}
+		if (CanSee(m_currentEnemy))
+		{
+			m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
+			Shoot();
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+			SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
+			m_timeToCare = 5;
+		}
+		else
+		{
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			m_timeToCare -= DeltaTime;
+			if (m_timeToCare <= 0)
+				m_currentEnemy = NULL;
+		}
+		GetCharacterMovement()->MaxWalkSpeed = 500;
+		if (m_rebuildPathTime <= 0)
+			m_rebuildPathTime = 0.5f;
+	}
+	else if (waitTime <= 0 && !m_havingConversation && !m_hypnotizedBy)
 	{
 		m_rebuildPathTime -= DeltaTime;
 		if (m_rebuildPathTime <= 0)
@@ -85,14 +120,29 @@ void AAICharacter::Tick( float DeltaTime )
 		DesiredRotation = GetActorRotation();
 	}
 
-	APlayerController* plr = GetWorld()->GetFirstPlayerController();
-	if (plr->WasInputKeyJustPressed(EKeys::LeftMouseButton))
-		Shoot();
-
+	if (!m_currentEnemy)
+		GetCharacterMovement()->MaxWalkSpeed = 200;
 }
 
 void AAICharacter::Shoot()
 {
+	FVector Dir;
+	if (m_currentEnemy)
+	{
+		Dir = (m_currentEnemy->GetActorLocation() - GetActorLocation());
+		Dir.Normalize();
+		FVector Dir2d = Dir;
+		Dir2d.Z = 0;
+		Dir2d.Normalize();
+		DesiredRotation = Dir2d.Rotation();
+	}
+	else
+	{
+		Dir = GetActorRotation().Vector();
+	}
+	if (m_rateOfFire > 0)
+		return;
+	m_rateOfFire = 0.5f;
 	const FName TraceTag("MyTraceTag");
 	GetWorld()->DebugDrawTraceTag = TraceTag;
 	FCollisionQueryParams Params;
@@ -100,7 +150,6 @@ void AAICharacter::Shoot()
 	Params.AddIgnoredActor(this);
 	FHitResult Hit;
 	FVector Start = GetActorLocation();
-	FVector Dir = GetActorRotation().Vector();
 	FVector Up, Right;
 	Dir.FindBestAxisVectors(Up, Right);
 	float angle = FMath::FRandRange(0, 2 * PI);
@@ -110,9 +159,30 @@ void AAICharacter::Shoot()
 	FVector End = Start + (Dir * 1000000);
 	if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params))
 	{
-		if (!Hit.Component.Get()->IsA(UModelComponent::StaticClass()) && Hit.Actor->IsA(AAICharacter::StaticClass()))
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ow"));
+		if (!Hit.Component.Get()->IsA(UModelComponent::StaticClass()))
+		{
+			if (Hit.Actor->IsA(AAICharacter::StaticClass()))
+				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Friendly fire"));
+			if (Hit.Actor->IsA(AHypnoToadCharacter::StaticClass()))
+				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ow"));
+		}
 	}
+}
+
+bool AAICharacter::CanSee(AActor* actor)
+{
+	FVector diff = actor->GetActorLocation() - GetActorLocation();
+	diff.Normalize();
+	float dot = FVector::DotProduct(GetActorRotation().Vector(), diff);
+	if (dot < 0.7f)
+		return false;
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	FHitResult Hit;
+
+	return GetWorld()->LineTraceSingle(Hit, GetActorLocation(), actor->GetActorLocation(), ECC_Visibility, Params)
+		&& Hit.Actor.Get() == actor;
 }
 
 // Called to bind functionality to input

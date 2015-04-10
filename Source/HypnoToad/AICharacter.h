@@ -30,6 +30,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = AI)
 	APathPoint* StartPPoint;
 
+	bool CanSee(AActor* actor);
 	void Shoot();
 
 	APathPoint* GetNextPPoint();
@@ -58,4 +59,8 @@ private:
 	AHypnoToadCharacter* m_hypnotizedBy;
 	bool m_followsHypnotizer;
 	float m_rebuildPathTime;
+	float m_rateOfFire;
+	float m_timeToCare;
+	AActor* m_currentEnemy;
+	FVector m_lastEnemyPosition;
 };

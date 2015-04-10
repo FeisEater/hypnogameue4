@@ -23,7 +23,7 @@ APathPoint::APathPoint()
 void APathPoint::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	m_gotVisited = false;
 }
 
 // Called every frame
@@ -39,5 +39,13 @@ void APathPoint::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveCompon
 		return;
 	AAICharacter* ai = (AAICharacter*)OtherActor;
 	if (ai->GetNextPPoint() == this)
+	{
 		ai->WaitAndHeadToNextPoint(this);
+		m_gotVisited = true;
+	}
+}
+
+bool APathPoint::GotVisited()
+{
+	return m_gotVisited;
 }
