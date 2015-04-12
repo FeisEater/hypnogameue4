@@ -62,9 +62,8 @@ private:
 	float m_rebuildPathTime;
 	float m_rateOfFire;
 	float m_timeToCare;
+	bool m_attacking;
 	AActor* m_currentEnemy;
 	FVector m_lastEnemyPosition;
 	float m_scanPosition;
 };
-//remember enemy while patroling
-//decrease chase timer when at lastenemyposition

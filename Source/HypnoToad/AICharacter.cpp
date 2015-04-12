@@ -32,6 +32,7 @@ void AAICharacter::BeginPlay()
 	DesiredRotation = GetActorRotation();
 	m_havingConversation = false;
 	m_hypnotizedBy = NULL;
+	m_attacking = false;
 
 	HTrigger* t = new HTriggerSawHypnotizedNpc(this);
 	t->SetAction(new HActionWakeNpc(this));
@@ -56,10 +57,12 @@ void AAICharacter::Tick( float DeltaTime )
 	if (m_rateOfFire > 0)
 		m_rateOfFire -= DeltaTime;
 
-	if (m_currentEnemy)
+	if (CanSee(m_currentEnemy))
+		m_attacking = true;
+
+	if (m_attacking)
 	{
 		DrawDebugBox(GetWorld(), m_lastEnemyPosition, FVector(100, 100, 100), FColor::Red);
-		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, DesiredRotation.ToString());
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 		m_rebuildPathTime -= DeltaTime;
@@ -91,11 +94,14 @@ void AAICharacter::Tick( float DeltaTime )
 			m_scanPosition += (2 * PI * DeltaTime) / 5;
 			if (m_scanPosition >= 2 * PI)
 				m_scanPosition -= 2 * PI;
-			m_timeToCare -= DeltaTime;
-			//if (m_timeToCare <= 0)
-			//	m_currentEnemy = NULL;
+			if (UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetActorLocation(), m_lastEnemyPosition)->GetPathLength() < 300)
+			{
+				m_timeToCare -= DeltaTime;
+				GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, FString::SanitizeFloat(m_timeToCare));
+				if (m_timeToCare <= 0)
+					m_attacking = false;
+			}
 		}
-		GetCharacterMovement()->MaxWalkSpeed = 500;
 		if (m_rebuildPathTime <= 0)
 			m_rebuildPathTime = 0.5f;
 	}
@@ -135,8 +141,7 @@ void AAICharacter::Tick( float DeltaTime )
 		DesiredRotation = GetActorRotation();
 	}
 
-	if (!m_currentEnemy)
-		GetCharacterMovement()->MaxWalkSpeed = 200;
+	GetCharacterMovement()->MaxWalkSpeed = m_attacking ? 500 : 200;
 }
 
 void AAICharacter::Shoot()
@@ -187,6 +192,7 @@ void AAICharacter::Shoot()
 
 bool AAICharacter::CanSee(AActor* actor)
 {
+	if (!actor)	return false;
 	FVector diff = actor->GetActorLocation() - GetActorLocation();
 	diff.Normalize();
 	float dot = FVector::DotProduct(GetActorRotation().Vector(), diff);
@@ -203,6 +209,7 @@ bool AAICharacter::CanSee(AActor* actor)
 
 void AAICharacter::Attack(AActor* actor)
 {
+	m_attacking = true;
 	m_currentEnemy = actor;
 	m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
 	m_timeToCare = 5;
