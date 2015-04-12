@@ -6,6 +6,8 @@
 #include "Runtime/Engine/Classes/AI/Navigation/NavigationPath.h"
 #include "HTriggerSawHypnotizedNpc.h"
 #include "HActionWakeNpc.h"
+#include "HTriggerSawPlayerHypnotizing.h"
+#include "HActionAttack.h"
 #include "HypnoToadCharacter.h"
 
 // Sets default values
@@ -33,15 +35,14 @@ void AAICharacter::BeginPlay()
 
 	HTrigger* t = new HTriggerSawHypnotizedNpc(this);
 	t->SetAction(new HActionWakeNpc(this));
+	HTrigger* t2 = new HTriggerSawPlayerHypnotizing(this);
+	t2->SetAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
 	triggers.Add(t);
+	triggers.Add(t2);
 
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AAICharacter::OnOverlapBegin);
-
-	//m_currentEnemy = GetWorld()->GetFirstPlayerController()->GetCharacter();
-	//m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
-	//m_timeToCare = 5;
 }
 
 // Called every frame
@@ -57,6 +58,10 @@ void AAICharacter::Tick( float DeltaTime )
 
 	if (m_currentEnemy)
 	{
+		DrawDebugBox(GetWorld(), m_lastEnemyPosition, FVector(100, 100, 100), FColor::Red);
+		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, DesiredRotation.ToString());
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 		m_rebuildPathTime -= DeltaTime;
 		if ((GetActorLocation() - m_currentEnemy->GetActorLocation()).Size() < 700 && CanSee(m_currentEnemy))
 			GetController()->StopMovement();
@@ -67,18 +72,28 @@ void AAICharacter::Tick( float DeltaTime )
 		}
 		if (CanSee(m_currentEnemy))
 		{
-			m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
+			if (!((ACharacter*)m_currentEnemy)->GetMovementComponent()->IsFalling())
+				m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
 			Shoot();
-			GetCharacterMovement()->bOrientRotationToMovement = false;
-			SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
+			//GetCharacterMovement()->bOrientRotationToMovement = false;
+			//SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 			m_timeToCare = 5;
 		}
 		else
 		{
-			GetCharacterMovement()->bOrientRotationToMovement = true;
+			//GetCharacterMovement()->bOrientRotationToMovement = true;
+			if (GetVelocity().Size() > 400)
+				DesiredRotation = GetVelocity().Rotation();
+			else
+				DesiredRotation.Yaw -= 60 * FMath::Sin(m_scanPosition - ((2 * PI * DeltaTime) / 5));
+			DesiredRotation.Pitch = 0;
+			DesiredRotation.Yaw += 60 * FMath::Sin(m_scanPosition);
+			m_scanPosition += (2 * PI * DeltaTime) / 5;
+			if (m_scanPosition >= 2 * PI)
+				m_scanPosition -= 2 * PI;
 			m_timeToCare -= DeltaTime;
-			if (m_timeToCare <= 0)
-				m_currentEnemy = NULL;
+			//if (m_timeToCare <= 0)
+			//	m_currentEnemy = NULL;
 		}
 		GetCharacterMovement()->MaxWalkSpeed = 500;
 		if (m_rebuildPathTime <= 0)
@@ -126,6 +141,7 @@ void AAICharacter::Tick( float DeltaTime )
 
 void AAICharacter::Shoot()
 {
+	m_scanPosition = 0;
 	FVector Dir;
 	if (m_currentEnemy)
 	{
@@ -183,6 +199,14 @@ bool AAICharacter::CanSee(AActor* actor)
 
 	return GetWorld()->LineTraceSingle(Hit, GetActorLocation(), actor->GetActorLocation(), ECC_Visibility, Params)
 		&& Hit.Actor.Get() == actor;
+}
+
+void AAICharacter::Attack(AActor* actor)
+{
+	m_currentEnemy = actor;
+	m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
+	m_timeToCare = 5;
+	m_scanPosition = 0;
 }
 
 // Called to bind functionality to input

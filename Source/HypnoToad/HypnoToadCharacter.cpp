@@ -248,3 +248,8 @@ void AHypnoToadCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+
+bool AHypnoToadCharacter::IsHypnotizing()
+{
+	return m_hypnotized != NULL;
+}

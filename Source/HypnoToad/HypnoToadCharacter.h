@@ -45,6 +45,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowConversationGUI(bool show);
 
+	bool IsHypnotizing();
+
 protected:
 
 	/** Called for forwards/backward input */

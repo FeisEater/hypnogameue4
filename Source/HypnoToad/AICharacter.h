@@ -31,6 +31,7 @@ public:
 	APathPoint* StartPPoint;
 
 	bool CanSee(AActor* actor);
+	void Attack(AActor* actor);
 	void Shoot();
 
 	APathPoint* GetNextPPoint();
@@ -63,4 +64,7 @@ private:
 	float m_timeToCare;
 	AActor* m_currentEnemy;
 	FVector m_lastEnemyPosition;
+	float m_scanPosition;
 };
+//remember enemy while patroling
+//decrease chase timer when at lastenemyposition
