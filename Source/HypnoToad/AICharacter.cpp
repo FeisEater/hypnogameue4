@@ -21,6 +21,8 @@ AAICharacter::~AAICharacter()
 {
 	for (HTrigger* t : triggers)
 		delete t;
+	for (HSound* s : m_heardSounds)
+		delete s;
 }
 
 // Called when the game starts or when spawned
@@ -50,7 +52,8 @@ void AAICharacter::BeginPlay()
 void AAICharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
-
+	
+	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, FString::FromInt(m_heardSounds.Num()));
 	for (HTrigger* t : triggers)
 		t->Trigger();
 
@@ -188,6 +191,7 @@ void AAICharacter::Shoot()
 				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ow"));
 		}
 	}
+	HSound::BroadCastSound(GetWorld(), new HGunShot(GetActorLocation()));
 }
 
 bool AAICharacter::CanSee(AActor* actor)
@@ -282,6 +286,11 @@ void AAICharacter::StayStillWhileHypnotized()
 bool AAICharacter::IsHypnotized()
 {
 	return m_hypnotizedBy != NULL;
+}
+
+void AAICharacter::HearSound(HSound* sound)
+{
+	m_heardSounds.Add(sound);
 }
 
 void AAICharacter::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

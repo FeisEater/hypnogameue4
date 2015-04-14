@@ -6,6 +6,7 @@
 #include "PathPoint.h"
 #include "HTrigger.h"
 #include "HypnoToadCharacter.h"
+#include "HSound.h"
 #include "AICharacter.generated.h"
 
 UCLASS()
@@ -45,6 +46,7 @@ public:
 	void EndHypnotization();
 	bool IsHypnotized();
 	void StayStillWhileHypnotized();
+	void HearSound(HSound* sound);
 
 	FRotator DesiredRotation;
 
@@ -66,4 +68,5 @@ private:
 	AActor* m_currentEnemy;
 	FVector m_lastEnemyPosition;
 	float m_scanPosition;
+	TArray<HSound*> m_heardSounds;
 };

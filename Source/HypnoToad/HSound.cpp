@@ -2,16 +2,26 @@
 
 #include "HypnoToad.h"
 #include "HSound.h"
+#include "AICharacter.h"
 
-bool HWord::Compare(const HSound& rhs)
+bool HWord::Compare(const HSound* rhs)
 {
-	const HWord* pRhsWord = dynamic_cast<const HWord*>(&rhs);
-	if (!pRhsWord)	return false;
-	return content == pRhsWord->content;
+	if (rhs->GetType() != HSoundType::Word)
+		return false;
+	const HWord *rhsWord = static_cast<const HWord *>(rhs);
+	return content == rhsWord->content;
 }
 
-bool HGunShot::Compare(const HSound& rhs)
+bool HGunShot::Compare(const HSound* rhs)
 {
-	const HGunShot* pRhsShot = dynamic_cast<const HGunShot*>(&rhs);
-	return pRhsShot ? true : false;
+	return rhs->GetType() == HSoundType::GunShot;
+}
+
+void HSound::BroadCastSound(UWorld* world, HSound* sound)
+{
+	for (TActorIterator<AAICharacter> ActorItr(world); ActorItr; ++ActorItr)
+	{
+		if ((sound->GetOrigin() - ActorItr->GetActorLocation()).Size() < sound->m_range)
+			ActorItr->HearSound(sound);
+	}
 }
