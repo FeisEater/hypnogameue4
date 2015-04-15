@@ -19,9 +19,9 @@ public:
 	HSound(FVector origin, float range) : m_origin(origin), m_range(range), m_type(HSoundType::None) {}
 	virtual ~HSound() {}
 
-	static void BroadCastSound(UWorld* world, HSound* sound);
+	static void BroadCastSound(UWorld* world, TSharedPtr<HSound> sound);
 
-	bool operator==(const HSound* rhs)
+	bool operator==(const TSharedPtr<HSound> rhs)
 	{
 		return Compare(rhs);
 	}
@@ -42,7 +42,7 @@ protected:
 	HSoundType m_type;
 
 private:
-	virtual bool Compare(const HSound* rhs) = 0;
+	virtual bool Compare(const TSharedPtr<HSound> rhs) = 0;
 };
 
 class HWord : public HSound
@@ -52,12 +52,11 @@ public:
 	{
 		m_type = HSoundType::Word;
 	}
-	virtual ~HWord() {}
 
 	FString content;
 
 private:
-	virtual bool Compare(const HSound* rhs);
+	bool Compare(const TSharedPtr<HSound> rhs) override;
 };
 
 class HGunShot : public HSound
@@ -67,8 +66,8 @@ public:
 	{
 		m_type = HSoundType::GunShot;
 	}
-	virtual ~HGunShot() {}
+	//virtual ~HGunShot() { UE_LOG(LogTemp, Warning, TEXT("gunshot destructed")); }
 
 private:
-	virtual bool Compare(const HSound* rhs);
+	bool Compare(const TSharedPtr<HSound> rhs) override;
 };

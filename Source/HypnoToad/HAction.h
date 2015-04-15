@@ -10,10 +10,13 @@ class AAICharacter;
 class HYPNOTOAD_API HAction
 {
 public:
-	HAction(AAICharacter* owner) : m_owner(owner) {}
+	HAction(AAICharacter* owner, bool overrideAttack) : m_owner(owner), m_overrideAttackState(overrideAttack) {}
 
-	virtual void Execute() {}
+	void Execute();
 
 protected:
+	virtual void RunAction() {}
+
 	AAICharacter* m_owner;
+	bool m_overrideAttackState;
 };

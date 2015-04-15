@@ -33,6 +33,7 @@ public:
 
 	bool CanSee(AActor* actor);
 	void Attack(AActor* actor);
+	bool IsAttacking();
 	void Shoot();
 
 	APathPoint* GetNextPPoint();
@@ -46,7 +47,8 @@ public:
 	void EndHypnotization();
 	bool IsHypnotized();
 	void StayStillWhileHypnotized();
-	void HearSound(HSound* sound);
+	void HearSound(TSharedPtr<HSound> sound);
+	bool HeardSound(TSharedPtr<HSound> sound);
 
 	FRotator DesiredRotation;
 
@@ -68,5 +70,5 @@ private:
 	AActor* m_currentEnemy;
 	FVector m_lastEnemyPosition;
 	float m_scanPosition;
-	TArray<HSound*> m_heardSounds;
+	TArray<TSharedPtr<HSound>> m_heardSounds;
 };

@@ -9,7 +9,8 @@
 class HYPNOTOAD_API HActionFreeze : public HAction
 {
 public:
-	HActionFreeze(AAICharacter* owner) : HAction(owner) {}
+	HActionFreeze(AAICharacter* owner, bool overrideAttack = false) : HAction(owner, overrideAttack) {}
 
-	virtual void Execute() override;
+protected:
+	virtual void RunAction() override;
 };

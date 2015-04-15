@@ -10,12 +10,13 @@
 class HYPNOTOAD_API HActionWakeNpc : public HAction
 {
 public:
-	HActionWakeNpc(AAICharacter* owner) : HAction(owner)
+	HActionWakeNpc(AAICharacter* owner, bool overrideAttack = false) : HAction(owner, overrideAttack)
 	{
 		m_detourPoint = NULL;
 	}
 
-	virtual void Execute() override;
+protected:
+	virtual void RunAction() override;
 
 private:
 	class APathPoint* m_detourPoint;

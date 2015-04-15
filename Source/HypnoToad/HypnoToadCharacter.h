@@ -45,6 +45,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowConversationGUI(bool show);
 
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	void SayWord(FString word);
+
 	bool IsHypnotizing();
 
 protected:

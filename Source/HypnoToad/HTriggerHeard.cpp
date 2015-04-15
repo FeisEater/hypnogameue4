@@ -1,12 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HypnoToad.h"
-#include "HActionFreeze.h"
+#include "HTriggerHeard.h"
 #include "AICharacter.h"
 
-void HActionFreeze::RunAction()
+bool HTriggerHeard::IsTriggered()
 {
-	m_owner->waitTime = 1;
-	m_owner->GetController()->StopMovement();
+	return m_owner->HeardSound(m_sound);
 }
-

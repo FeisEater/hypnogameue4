@@ -9,8 +9,10 @@
 class HYPNOTOAD_API HActionAttack : public HAction
 {
 public:
-	HActionAttack(AAICharacter* owner, class AActor* target) : HAction(owner), m_target(target) {}
-	virtual void Execute() override;
+	HActionAttack(AAICharacter* owner, class AActor* target, bool overrideAttack = true) : HAction(owner, overrideAttack), m_target(target) {}
+
+protected:
+	virtual void RunAction() override;
 
 private:
 	AActor* m_target;

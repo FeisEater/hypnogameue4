@@ -4,7 +4,7 @@
 #include "HActionWakeNpc.h"
 #include "AICharacter.h"
 
-void HActionWakeNpc::Execute()
+void HActionWakeNpc::RunAction()
 {
 	if (m_detourPoint)
 	{

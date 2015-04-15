@@ -4,7 +4,7 @@
 #include "HActionAttack.h"
 #include "AICharacter.h"
 
-void HActionAttack::Execute()
+void HActionAttack::RunAction()
 {
 	m_owner->Attack(m_target);
 }

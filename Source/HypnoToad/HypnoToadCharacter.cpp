@@ -138,6 +138,19 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		}
 	}
 
+	if (plr->WasInputKeyJustPressed(EKeys::R))
+	{
+		SetGUIMode(true);
+		//HSound::BroadCastSound(GetWorld(), TSharedPtr<HSound>(new HWord(GetActorLocation(), TEXT("Test"))));
+	}
+	if (plr->WasInputKeyJustPressed(EKeys::T))
+		SetGUIMode(false);
+
+}
+
+void AHypnoToadCharacter::SayWord(FString word)
+{
+	HSound::BroadCastSound(GetWorld(), TSharedPtr<HSound>(new HWord(GetActorLocation(), word)));
 }
 
 AAICharacter* AHypnoToadCharacter::InterractsWithNPC(float range)

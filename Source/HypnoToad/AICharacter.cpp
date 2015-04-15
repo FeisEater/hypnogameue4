@@ -8,6 +8,8 @@
 #include "HActionWakeNpc.h"
 #include "HTriggerSawPlayerHypnotizing.h"
 #include "HActionAttack.h"
+#include "HTriggerHeard.h"
+#include "HActionFreeze.h"
 #include "HypnoToadCharacter.h"
 
 // Sets default values
@@ -21,8 +23,6 @@ AAICharacter::~AAICharacter()
 {
 	for (HTrigger* t : triggers)
 		delete t;
-	for (HSound* s : m_heardSounds)
-		delete s;
 }
 
 // Called when the game starts or when spawned
@@ -40,8 +40,11 @@ void AAICharacter::BeginPlay()
 	t->SetAction(new HActionWakeNpc(this));
 	HTrigger* t2 = new HTriggerSawPlayerHypnotizing(this);
 	t2->SetAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
+	HTrigger* t3 = new HTriggerHeard(this, TSharedPtr<HSound>(new HWord(FVector::ZeroVector, TEXT("Test"))));
+	t3->SetAction(new HActionFreeze(this));
 	triggers.Add(t);
 	triggers.Add(t2);
+	triggers.Add(t3);
 
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 
@@ -53,9 +56,9 @@ void AAICharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 	
-	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, FString::FromInt(m_heardSounds.Num()));
 	for (HTrigger* t : triggers)
 		t->Trigger();
+	m_heardSounds.Empty();
 
 	if (m_rateOfFire > 0)
 		m_rateOfFire -= DeltaTime;
@@ -131,9 +134,12 @@ void AAICharacter::Tick( float DeltaTime )
 	}
 	else if (!m_hypnotizedBy)
 	{
-		waitTime -= DeltaTime;
-		if (waitTime <= 0)
-			UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
+		if (!m_havingConversation)
+		{
+			waitTime -= DeltaTime;
+			if (waitTime <= 0)
+				UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
+		}
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 	}
@@ -191,7 +197,8 @@ void AAICharacter::Shoot()
 				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ow"));
 		}
 	}
-	HSound::BroadCastSound(GetWorld(), new HGunShot(GetActorLocation()));
+	TSharedPtr<HSound> gunShot(new HGunShot(GetActorLocation()));
+	HSound::BroadCastSound(GetWorld(), gunShot);
 }
 
 bool AAICharacter::CanSee(AActor* actor)
@@ -218,6 +225,11 @@ void AAICharacter::Attack(AActor* actor)
 	m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
 	m_timeToCare = 5;
 	m_scanPosition = 0;
+}
+
+bool AAICharacter::IsAttacking()
+{
+	return m_attacking;
 }
 
 // Called to bind functionality to input
@@ -288,9 +300,19 @@ bool AAICharacter::IsHypnotized()
 	return m_hypnotizedBy != NULL;
 }
 
-void AAICharacter::HearSound(HSound* sound)
+void AAICharacter::HearSound(TSharedPtr<HSound> sound)
 {
 	m_heardSounds.Add(sound);
+}
+
+bool AAICharacter::HeardSound(TSharedPtr<HSound> sound)
+{
+	for (TSharedPtr<HSound> snd : m_heardSounds)
+	{
+		if (*snd == sound)
+			return true;
+	}
+	return false;
 }
 
 void AAICharacter::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
