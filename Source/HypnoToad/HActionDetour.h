@@ -7,10 +7,10 @@
 /**
  * 
  */
-class HYPNOTOAD_API HActionWakeNpc : public HAction
+class HYPNOTOAD_API HActionDetour : public HAction
 {
 public:
-	HActionWakeNpc(AAICharacter* owner, bool overrideAttack = false) : HAction(owner, overrideAttack)
+	HActionDetour(AAICharacter* owner, TSharedPtr<FVector> target, bool overrideAttack = false) : HAction(owner, overrideAttack), m_targetPosition(target)
 	{
 		m_detourPoint = NULL;
 	}
@@ -19,5 +19,6 @@ protected:
 	virtual void RunAction() override;
 
 private:
+	TSharedPtr<FVector> m_targetPosition;
 	class APathPoint* m_detourPoint;
 };

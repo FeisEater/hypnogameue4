@@ -5,7 +5,7 @@
 #include "Engine.h"
 #include "Runtime/Engine/Classes/AI/Navigation/NavigationPath.h"
 #include "HTriggerSawHypnotizedNpc.h"
-#include "HActionWakeNpc.h"
+#include "HActionDetour.h"
 #include "HTriggerSawPlayerHypnotizing.h"
 #include "HActionAttack.h"
 #include "HTriggerHeard.h"
@@ -37,11 +37,13 @@ void AAICharacter::BeginPlay()
 	m_attacking = false;
 
 	HTrigger* t = new HTriggerSawHypnotizedNpc(this);
-	t->SetAction(new HActionWakeNpc(this));
+	HTriggerSawHypnotizedNpc* sawHypnotizedNpc = (HTriggerSawHypnotizedNpc*)t;
+	t->SetAction(new HActionDetour(this, sawHypnotizedNpc->GetHypnotizedNpcLocation()));
 	HTrigger* t2 = new HTriggerSawPlayerHypnotizing(this);
 	t2->SetAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
-	HTrigger* t3 = new HTriggerHeard(this, TSharedPtr<HSound>(new HWord(FVector::ZeroVector, TEXT("Test"))));
-	t3->SetAction(new HActionFreeze(this));
+	HTrigger* t3 = new HTriggerHeard(this, TSharedPtr<HSound>(new HGunShot(FVector::ZeroVector)));
+	HTriggerHeard* heard = (HTriggerHeard*)t3;
+	t3->SetAction(new HActionDetour(this, heard->GetSoundSource()));
 	triggers.Add(t);
 	triggers.Add(t2);
 	triggers.Add(t3);
@@ -305,14 +307,14 @@ void AAICharacter::HearSound(TSharedPtr<HSound> sound)
 	m_heardSounds.Add(sound);
 }
 
-bool AAICharacter::HeardSound(TSharedPtr<HSound> sound)
+TSharedPtr<HSound> AAICharacter::HeardSound(TSharedPtr<HSound> sound)
 {
 	for (TSharedPtr<HSound> snd : m_heardSounds)
 	{
 		if (*snd == sound)
-			return true;
+			return snd;
 	}
-	return false;
+	return NULL;
 }
 
 void AAICharacter::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

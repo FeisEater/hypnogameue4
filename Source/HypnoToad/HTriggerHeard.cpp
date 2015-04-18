@@ -6,5 +6,16 @@
 
 bool HTriggerHeard::IsTriggered()
 {
-	return m_owner->HeardSound(m_sound);
+	TSharedPtr<HSound> sound = m_owner->HeardSound(m_sound);
+	if (sound.IsValid())
+	{
+		m_soundSource = sound->GetOrigin();
+		return true;
+	}
+	return false;
+}
+
+TSharedPtr<FVector> HTriggerHeard::GetSoundSource()
+{
+	return TSharedPtr<FVector>(&m_soundSource);
 }

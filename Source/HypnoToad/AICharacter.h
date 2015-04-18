@@ -48,7 +48,7 @@ public:
 	bool IsHypnotized();
 	void StayStillWhileHypnotized();
 	void HearSound(TSharedPtr<HSound> sound);
-	bool HeardSound(TSharedPtr<HSound> sound);
+	TSharedPtr<HSound> HeardSound(TSharedPtr<HSound> sound);
 
 	FRotator DesiredRotation;
 

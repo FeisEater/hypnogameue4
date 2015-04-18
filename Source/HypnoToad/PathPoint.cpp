@@ -16,7 +16,8 @@ APathPoint::APathPoint()
 	MyCollisionComp->SetSphereRadius(20.0f);
 	RootComponent = MyCollisionComp;
 	MyCollisionComp->OnComponentBeginOverlap.AddDynamic(this, &APathPoint::OnOverlapBegin);
-
+	
+	Overridable = false;
 }
 
 // Called when the game starts or when spawned

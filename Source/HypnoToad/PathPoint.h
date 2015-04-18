@@ -34,6 +34,7 @@ public:
 	void OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	bool GotVisited();
+	bool Overridable;
 
 private:
 	bool m_gotVisited;

@@ -11,8 +11,8 @@ class HYPNOTOAD_API HTriggerSawHypnotizedNpc : public HTrigger
 {
 public:
 	HTriggerSawHypnotizedNpc(AAICharacter* owner) : HTrigger(owner) {}
-
+	TSharedPtr<FVector> GetHypnotizedNpcLocation();
 protected:
 	virtual bool IsTriggered() override;
-
+	FVector m_hypnotizedNpcLocation;
 };

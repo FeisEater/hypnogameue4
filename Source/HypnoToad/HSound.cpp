@@ -19,7 +19,6 @@ bool HGunShot::Compare(const TSharedPtr<HSound> rhs)
 
 void HSound::BroadCastSound(UWorld* world, TSharedPtr<HSound> sound)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("wassup"));
 	for (TActorIterator<AAICharacter> ActorItr(world); ActorItr; ++ActorItr)
 	{
 		if ((sound->GetOrigin() - ActorItr->GetActorLocation()).Size() < sound->m_range)
