@@ -4,6 +4,7 @@
 #include "HypnoToadCharacter.h"
 #include "Engine.h"
 #include "AICharacter.h"
+#include "HTrigger.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AHypnoToadCharacter
@@ -265,4 +266,11 @@ void AHypnoToadCharacter::MoveRight(float Value)
 bool AHypnoToadCharacter::IsHypnotizing()
 {
 	return m_hypnotized != NULL;
+}
+
+TArray<HTrigger*> AHypnoToadCharacter::GetNpcTriggers()
+{
+	if (m_conversationWith == NULL)
+		return TArray < HTrigger* >();
+	return m_conversationWith->GetTriggers();
 }

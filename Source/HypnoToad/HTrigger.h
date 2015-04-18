@@ -9,6 +9,7 @@
  */
 class AAICharacter;
 
+UCLASS(Abstract)
 class HYPNOTOAD_API HTrigger
 {
 public:

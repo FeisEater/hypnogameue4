@@ -4,6 +4,7 @@
 #include "HypnoToadCharacter.generated.h"
 
 class AAICharacter;
+class HTrigger;
 
 UCLASS(config=Game)
 class AHypnoToadCharacter : public ACharacter
@@ -30,6 +31,10 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
+
+	/** Fetches triggers of the npc with whom player interracts currently */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	TArray<HTrigger*> GetNpcTriggers();
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = UI)
 	//TSubclassOf<UUserWidget> WidgetTemplate;

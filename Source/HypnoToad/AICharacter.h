@@ -54,6 +54,11 @@ public:
 
 	float waitTime;	//move to private
 
+	TArray<HTrigger*> GetTriggers()
+	{
+		return triggers;
+	}
+
 	UFUNCTION()
 	void OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
