@@ -268,9 +268,22 @@ bool AHypnoToadCharacter::IsHypnotizing()
 	return m_hypnotized != NULL;
 }
 
-TArray<HTrigger*> AHypnoToadCharacter::GetNpcTriggers()
+TArray<FString> AHypnoToadCharacter::GetNpcTriggerNames()
 {
 	if (m_conversationWith == NULL)
-		return TArray < HTrigger* >();
-	return m_conversationWith->GetTriggers();
+		return TArray < FString >();
+	TArray<FString> arrayOfTriggerNames;
+	for (HTrigger* t : m_conversationWith->GetTriggers())
+		arrayOfTriggerNames.Add(t->GetMenuName());
+	return arrayOfTriggerNames;
+}
+
+void AHypnoToadCharacter::CreateTriggerThroughIndex(int32 index)
+{
+	if (m_conversationWith == NULL)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Something's wrong"));
+		return;
+	}
+	m_conversationWith->PrepareTriggerViaIndex(index);
 }

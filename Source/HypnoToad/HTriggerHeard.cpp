@@ -19,3 +19,9 @@ TSharedPtr<FVector> HTriggerHeard::GetSoundSource()
 {
 	return TSharedPtr<FVector>(&m_soundSource);
 }
+
+void HTriggerHeard::CollectParameters()
+{
+	APlayerController* plr = *(m_owner->GetWorld()->GetPlayerControllerIterator());
+
+}

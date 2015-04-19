@@ -32,9 +32,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-	/** Fetches triggers of the npc with whom player interracts currently */
+	/** Fetches names of triggers of the npc with whom player interracts currently */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
-	TArray<HTrigger*> GetNpcTriggers();
+	TArray<FString> GetNpcTriggerNames();
+
+	/** Attaches a trigger to interracted npc via index */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	void CreateTriggerThroughIndex(int32 index);
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = UI)
 	//TSubclassOf<UUserWidget> WidgetTemplate;

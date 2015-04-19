@@ -10,6 +10,7 @@
 #include "HActionAttack.h"
 #include "HTriggerHeard.h"
 #include "HActionFreeze.h"
+#include "HTriggerSaw.h"
 #include "HypnoToadCharacter.h"
 
 // Sets default values
@@ -48,6 +49,9 @@ void AAICharacter::BeginPlay()
 	triggers.Add(t2);
 	triggers.Add(t3);
 
+	m_availableTriggers.Add(new HTriggerSaw(this, ADecalActor::StaticClass()));
+	m_availableTriggers.Add(new HTriggerHeard(this, TSharedPtr<HSound>(new HGunShot(FVector::ZeroVector))));
+
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AAICharacter::OnOverlapBegin);
@@ -60,6 +64,7 @@ void AAICharacter::Tick( float DeltaTime )
 	
 	for (HTrigger* t : triggers)
 		t->Trigger();
+
 	m_heardSounds.Empty();
 
 	if (m_rateOfFire > 0)
@@ -323,4 +328,20 @@ void AAICharacter::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComp
 		return;
 	AAICharacter* ai = (AAICharacter*)OtherActor;
 	ai->EndHypnotization();
+}
+
+void AAICharacter::PrepareTriggerViaIndex(int32 index)
+{
+	m_pendingTrigger = m_availableTriggers[index];
+	m_pendingTrigger->CollectParameters();
+}
+
+void AAICharacter::AttachPendingTrigger()
+{
+	if (!m_pendingTrigger)
+		return;
+	HTrigger* t = m_pendingTrigger->CreateTrigger();
+	t->SetAction(new HActionFreeze(this));
+	triggers.Add(t);
+	m_pendingTrigger = NULL;
 }

@@ -56,8 +56,10 @@ public:
 
 	TArray<HTrigger*> GetTriggers()
 	{
-		return triggers;
+		return m_availableTriggers;
 	}
+	void PrepareTriggerViaIndex(int32 index);
+	void AttachPendingTrigger();
 
 	UFUNCTION()
 	void OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -76,4 +78,6 @@ private:
 	FVector m_lastEnemyPosition;
 	float m_scanPosition;
 	TArray<TSharedPtr<HSound>> m_heardSounds;
+	TArray<HTrigger*> m_availableTriggers;
+	HTrigger* m_pendingTrigger;
 };

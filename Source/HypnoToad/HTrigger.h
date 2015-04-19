@@ -9,7 +9,6 @@
  */
 class AAICharacter;
 
-UCLASS(Abstract)
 class HYPNOTOAD_API HTrigger
 {
 public:
@@ -18,6 +17,10 @@ public:
 	void Trigger();
 
 	void SetAction(HAction* action) { m_action = action; }
+
+	virtual FString GetMenuName() = 0;
+	virtual HTrigger* CreateTrigger() = 0;
+	virtual void CollectParameters();
 
 protected:
 	virtual bool IsTriggered() { return false; }
