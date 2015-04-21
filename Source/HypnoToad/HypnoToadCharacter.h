@@ -36,9 +36,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	TArray<FString> GetNpcTriggerNames();
 
+	/** Fetches names of actions of the npc with whom player interracts currently */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	TArray<FString> GetNpcActionNames();
+
 	/** Attaches a trigger to interracted npc via index */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void CreateTriggerThroughIndex(int32 index);
+
+	/** Attaches an action to interracted npc via index */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	void CreateActionThroughIndex(int32 index);
 
 	/** Passes gunshot sound as parameter for pending trigger */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
@@ -65,6 +73,10 @@ public:
 	/** Show sound configuring gui element. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowSoundParameterGui();
+
+	/** Show action options gui element. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
+	void ShowActionsGui();
 
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void SayWord(FString word);

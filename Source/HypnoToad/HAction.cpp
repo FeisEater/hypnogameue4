@@ -9,3 +9,8 @@ void HAction::Execute()
 	if (m_overrideAttackState || !m_owner->IsAttacking())
 		RunAction();
 }
+
+void HAction::CollectParameters()
+{
+	m_owner->AttachPendingTrigger();
+}

@@ -8,3 +8,9 @@ void HActionAttack::RunAction()
 {
 	m_owner->Attack(m_target);
 }
+
+void HActionAttack::CollectParameters()
+{
+	m_target = m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+	HAction::CollectParameters();
+}

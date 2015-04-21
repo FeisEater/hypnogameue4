@@ -13,6 +13,9 @@ public:
 	HAction(AAICharacter* owner, bool overrideAttack) : m_owner(owner), m_overrideAttackState(overrideAttack) {}
 
 	void Execute();
+	virtual FString GetMenuName() = 0;
+	virtual HAction* CreateAction() = 0;
+	virtual void CollectParameters();
 
 protected:
 	virtual void RunAction() {}

@@ -12,10 +12,12 @@ void HTrigger::Trigger()
 
 void HTrigger::CollectParameters()
 {
-	m_owner->AttachPendingTrigger();
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+	plr->ShowActionsGui();
 }
 
 void HTrigger::SetSoundParameter(TSharedPtr<HSound> sound)
 {
-	m_owner->AttachPendingTrigger();
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+	plr->ShowActionsGui();
 }

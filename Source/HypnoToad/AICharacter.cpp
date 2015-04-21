@@ -52,6 +52,10 @@ void AAICharacter::BeginPlay()
 	m_availableTriggers.Add(new HTriggerSaw(this, ADecalActor::StaticClass()));
 	m_availableTriggers.Add(new HTriggerHeard(this, TSharedPtr<HSound>(new HGunShot(FVector::ZeroVector))));
 
+	m_availableActions.Add(new HActionAttack(this, NULL));
+	m_availableActions.Add(new HActionDetour(this, NULL));
+	m_availableActions.Add(new HActionFreeze(this));
+
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AAICharacter::OnOverlapBegin);
@@ -340,10 +344,19 @@ void AAICharacter::PrepareTriggerViaIndex(int32 index)
 
 void AAICharacter::AttachPendingTrigger()
 {
-	if (!m_pendingTrigger)
+	if (!m_pendingTrigger || !m_pendingAction)
 		return;
 	HTrigger* t = m_pendingTrigger->CreateTrigger();
-	t->SetAction(new HActionFreeze(this));
+	t->SetAction(m_pendingAction->CreateAction());
 	triggers.Add(t);
 	m_pendingTrigger = NULL;
+	m_pendingAction = NULL;
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)GetWorld()->GetFirstPlayerController()->GetCharacter();
+	plr->ShowConversationGUI(true);
+}
+
+void AAICharacter::PrepareActionViaIndex(int32 index)
+{
+	m_pendingAction = m_availableActions[index];
+	m_pendingAction->CollectParameters();
 }

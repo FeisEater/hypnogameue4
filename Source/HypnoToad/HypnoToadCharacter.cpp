@@ -301,3 +301,23 @@ void AHypnoToadCharacter::PassWordParameter(FString word)
 		return;
 	m_conversationWith->GetPendingTrigger()->SetSoundParameter(TSharedPtr<HSound>(new HWord(FVector::ZeroVector, word)));
 }
+
+TArray<FString> AHypnoToadCharacter::GetNpcActionNames()
+{
+	if (m_conversationWith == NULL)
+		return TArray < FString >();
+	TArray<FString> arrayOfActionNames;
+	for (HAction* a : m_conversationWith->GetActions())
+		arrayOfActionNames.Add(a->GetMenuName());
+	return arrayOfActionNames;
+}
+
+void AHypnoToadCharacter::CreateActionThroughIndex(int32 index)
+{
+	if (m_conversationWith == NULL)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Something's wrong"));
+		return;
+	}
+	m_conversationWith->PrepareActionViaIndex(index);
+}
