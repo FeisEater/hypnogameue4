@@ -60,6 +60,10 @@ public:
 	}
 	void PrepareTriggerViaIndex(int32 index);
 	void AttachPendingTrigger();
+	HTrigger* GetPendingTrigger()
+	{
+		return m_pendingTrigger;
+	}
 
 	UFUNCTION()
 	void OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

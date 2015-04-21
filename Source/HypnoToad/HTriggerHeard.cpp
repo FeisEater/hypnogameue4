@@ -22,6 +22,13 @@ TSharedPtr<FVector> HTriggerHeard::GetSoundSource()
 
 void HTriggerHeard::CollectParameters()
 {
-	APlayerController* plr = *(m_owner->GetWorld()->GetPlayerControllerIterator());
+	APlayerController* plrController = *(m_owner->GetWorld()->GetPlayerControllerIterator());
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
+	plr->ShowSoundParameterGui();
+}
 
+void HTriggerHeard::SetSoundParameter(TSharedPtr<HSound> sound)
+{
+	m_sound = sound;
+	HTrigger::SetSoundParameter(sound);
 }

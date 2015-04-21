@@ -14,3 +14,8 @@ void HTrigger::CollectParameters()
 {
 	m_owner->AttachPendingTrigger();
 }
+
+void HTrigger::SetSoundParameter(TSharedPtr<HSound> sound)
+{
+	m_owner->AttachPendingTrigger();
+}

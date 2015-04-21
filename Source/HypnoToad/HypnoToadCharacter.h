@@ -40,6 +40,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void CreateTriggerThroughIndex(int32 index);
 
+	/** Passes gunshot sound as parameter for pending trigger */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	void PassGunShotParameter();
+
+	/** Passes word sound as parameter for pending trigger */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	void PassWordParameter(FString word);
+
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = UI)
 	//TSubclassOf<UUserWidget> WidgetTemplate;
 
@@ -53,6 +61,10 @@ public:
 	/** Show gui element for conversation. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowConversationGUI(bool show);
+
+	/** Show sound configuring gui element. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
+	void ShowSoundParameterGui();
 
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void SayWord(FString word);

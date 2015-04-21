@@ -63,7 +63,9 @@ void AAICharacter::Tick( float DeltaTime )
 	Super::Tick( DeltaTime );
 	
 	for (HTrigger* t : triggers)
+	{
 		t->Trigger();
+	}
 
 	m_heardSounds.Empty();
 

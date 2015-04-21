@@ -287,3 +287,17 @@ void AHypnoToadCharacter::CreateTriggerThroughIndex(int32 index)
 	}
 	m_conversationWith->PrepareTriggerViaIndex(index);
 }
+
+void AHypnoToadCharacter::PassGunShotParameter()
+{
+	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger())
+		return;
+	m_conversationWith->GetPendingTrigger()->SetSoundParameter(TSharedPtr<HSound>(new HGunShot(FVector::ZeroVector)));
+}
+
+void AHypnoToadCharacter::PassWordParameter(FString word)
+{
+	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger() == NULL)
+		return;
+	m_conversationWith->GetPendingTrigger()->SetSoundParameter(TSharedPtr<HSound>(new HWord(FVector::ZeroVector, word)));
+}

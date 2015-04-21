@@ -2,7 +2,7 @@
 
 #pragma once
 #include "HTrigger.h"
-#include "HSound.h"
+
 /**
  * 
  */
@@ -20,7 +20,8 @@ public:
 	{
 		return new HTriggerHeard(m_owner, m_sound);
 	}
-	void CollectParameters();
+	void CollectParameters() override;
+	void SetSoundParameter(TSharedPtr<HSound> sound) override;
 
 protected:
 	virtual bool IsTriggered() override;
