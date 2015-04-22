@@ -321,3 +321,12 @@ void AHypnoToadCharacter::CreateActionThroughIndex(int32 index)
 	}
 	m_conversationWith->PrepareActionViaIndex(index);
 }
+
+TArray<AActor*> AHypnoToadCharacter::GetNpcAttackTargets()
+{
+	TArray<AActor*> result;
+	for (TActorIterator<AAICharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+		result.Add(*ActorItr);
+	result.Add(this);
+	return result;
+}

@@ -56,6 +56,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void PassWordParameter(FString word);
 
+	/** Fetches Actors suitable to be targets of Npc's attack */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	TArray<AActor*> GetNpcAttackTargets();
+
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = UI)
 	//TSubclassOf<UUserWidget> WidgetTemplate;
 
@@ -125,6 +129,5 @@ private:
 	AAICharacter* InterractsWithNPC(float range);
 	AAICharacter* m_conversationWith;
 	AAICharacter* m_hypnotized;
-	float m_i;
 };
 
