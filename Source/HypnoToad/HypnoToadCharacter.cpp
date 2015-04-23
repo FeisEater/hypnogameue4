@@ -330,3 +330,10 @@ TArray<AActor*> AHypnoToadCharacter::GetNpcAttackTargets()
 	result.Add(this);
 	return result;
 }
+
+void AHypnoToadCharacter::PassActorParameter(AActor* actor)
+{
+	if (m_conversationWith == NULL || m_conversationWith->GetPendingAction() == NULL)
+		return;
+	m_conversationWith->GetPendingAction()->SetActorParameter(actor);
+}

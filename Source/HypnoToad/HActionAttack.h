@@ -13,6 +13,7 @@ public:
 	FString GetMenuName() override { return "Attack..."; }
 	HAction* CreateAction() override { return new HActionAttack(m_owner, m_target); }
 	void CollectParameters() override;
+	void SetActorParameter(AActor* actor) override;
 
 protected:
 	virtual void RunAction() override;

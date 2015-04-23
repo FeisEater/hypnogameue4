@@ -56,6 +56,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void PassWordParameter(FString word);
 
+	/** Passes actor as parameter for pending action */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	void PassActorParameter(AActor* actor);
+
 	/** Fetches Actors suitable to be targets of Npc's attack */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	TArray<AActor*> GetNpcAttackTargets();
@@ -77,6 +81,10 @@ public:
 	/** Show sound configuring gui element. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowSoundParameterGui();
+
+	/** Show sound configuring gui element. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
+	void ShowActorParameterGui();
 
 	/** Show action options gui element. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")

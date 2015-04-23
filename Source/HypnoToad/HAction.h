@@ -16,6 +16,7 @@ public:
 	virtual FString GetMenuName() = 0;
 	virtual HAction* CreateAction() = 0;
 	virtual void CollectParameters();
+	virtual void SetActorParameter(AActor* actor);
 
 protected:
 	virtual void RunAction() {}

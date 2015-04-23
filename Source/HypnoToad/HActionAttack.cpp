@@ -11,6 +11,14 @@ void HActionAttack::RunAction()
 
 void HActionAttack::CollectParameters()
 {
-	m_target = m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
-	HAction::CollectParameters();
+	APlayerController* plrController = *(m_owner->GetWorld()->GetPlayerControllerIterator());
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
+	plr->ShowActorParameterGui();
+}
+
+void HActionAttack::SetActorParameter(AActor* actor)
+{
+	m_target = actor;
+	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, m_target->GetName());
+	HAction::SetActorParameter(actor);
 }

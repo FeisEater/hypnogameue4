@@ -14,3 +14,8 @@ void HAction::CollectParameters()
 {
 	m_owner->AttachPendingTrigger();
 }
+
+void HAction::SetActorParameter(AActor* actor)
+{
+	m_owner->AttachPendingTrigger();
+}
