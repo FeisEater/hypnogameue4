@@ -17,6 +17,7 @@ public:
 	virtual HAction* CreateAction() = 0;
 	virtual void CollectParameters();
 	virtual void SetActorParameter(AActor* actor);
+	virtual void SetVectorParameter(TSharedPtr<FVector> vector);
 
 protected:
 	virtual void RunAction() {}

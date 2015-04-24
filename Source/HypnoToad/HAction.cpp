@@ -19,3 +19,8 @@ void HAction::SetActorParameter(AActor* actor)
 {
 	m_owner->AttachPendingTrigger();
 }
+
+void HAction::SetVectorParameter(TSharedPtr<FVector> vector)
+{
+	m_owner->AttachPendingTrigger();
+}

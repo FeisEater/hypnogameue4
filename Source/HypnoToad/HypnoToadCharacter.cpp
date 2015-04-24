@@ -44,6 +44,10 @@ AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitial
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 
+	ConstructorHelpers::FObjectFinder<UBlueprint> Blueprint(TEXT("Blueprint'/Game/MyBlueprints/PathPointMarker_Blueprint.PathPointMarker_Blueprint'"));
+	if (Blueprint.Object != NULL)
+		PathPointMarkerClass = (UClass*)Blueprint.Object->GeneratedClass;
+
 	//WidgetInstance = CreateWidget(this, WidgetTemplate);
 	//WidgetInstance->AddToViewport();
 }
@@ -146,6 +150,19 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 	}
 	if (plr->WasInputKeyJustPressed(EKeys::T))
 		SetGUIMode(false);
+	if (plr->WasInputKeyJustPressed(EKeys::Tab) && PathPointMarkerClass)
+	{
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(plr->GetPawn());
+		FHitResult Hit;
+		FVector End = GetActorLocation() - FVector::UpVector * 200;
+		if (GetWorld()->LineTraceSingle(Hit, GetActorLocation(), End, ECC_Visibility, Params))
+		{
+			FVector* loc = new FVector(Hit.ImpactPoint);
+			FRotator* rot = new FRotator(GetActorRotation());
+			GetWorld()->SpawnActor(PathPointMarkerClass, loc, rot);
+		}
+	}
 
 }
 
@@ -336,4 +353,18 @@ void AHypnoToadCharacter::PassActorParameter(AActor* actor)
 	if (m_conversationWith == NULL || m_conversationWith->GetPendingAction() == NULL)
 		return;
 	m_conversationWith->GetPendingAction()->SetActorParameter(actor);
+}
+
+bool AHypnoToadCharacter::TriggerReturnsParameter()
+{
+	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger() == NULL)
+		return false;
+	return m_conversationWith->GetPendingTrigger()->ProvidedParameter() != NULL;
+}
+
+void AHypnoToadCharacter::PassTriggersParameter()
+{
+	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger() == NULL || m_conversationWith->GetPendingAction() == NULL)
+		return;
+	m_conversationWith->GetPendingAction()->SetActorParameter(m_conversationWith->GetPendingTrigger()->ProvidedParameter());
 }

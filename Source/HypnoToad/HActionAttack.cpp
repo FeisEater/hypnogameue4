@@ -19,6 +19,5 @@ void HActionAttack::CollectParameters()
 void HActionAttack::SetActorParameter(AActor* actor)
 {
 	m_target = actor;
-	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, m_target->GetName());
 	HAction::SetActorParameter(actor);
 }

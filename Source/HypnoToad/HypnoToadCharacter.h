@@ -64,6 +64,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	TArray<AActor*> GetNpcAttackTargets();
 
+	/** Checks if trigger provides correct parameter for action */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	bool TriggerReturnsParameter();
+
+	/** Passes parameter provided by trigger to action */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	void PassTriggersParameter();
+
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = UI)
 	//TSubclassOf<UUserWidget> WidgetTemplate;
 
@@ -137,5 +145,6 @@ private:
 	AAICharacter* InterractsWithNPC(float range);
 	AAICharacter* m_conversationWith;
 	AAICharacter* m_hypnotized;
+	UClass* PathPointMarkerClass;
 };
 

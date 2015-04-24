@@ -25,11 +25,13 @@ public:
 		m_class = ADecalActor::StaticClass();
 		HTrigger::CollectParameters();
 	}
+	AActor* ProvidedParameter() { return m_seenActor; }
 
 protected:
 	virtual bool IsTriggered() override;
 
 private:
 	UClass* m_class;
+	AActor* m_seenActor;
 
 };

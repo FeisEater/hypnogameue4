@@ -23,6 +23,7 @@ public:
 	virtual HTrigger* CreateTrigger() = 0;
 	virtual void CollectParameters();
 	virtual void SetSoundParameter(TSharedPtr<HSound> sound);
+	virtual AActor* ProvidedParameter() { return NULL; }
 
 protected:
 	virtual bool IsTriggered() { return false; }
