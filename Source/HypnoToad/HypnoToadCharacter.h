@@ -60,9 +60,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void PassActorParameter(AActor* actor);
 
+	/** Passes location as parameter for pending action */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	void PassLocationParameter(FVector location);
+
 	/** Fetches Actors suitable to be targets of Npc's attack */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	TArray<AActor*> GetNpcAttackTargets();
+
+	/** Fetches marked locations */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	TArray<AActor*> GetMarkedLocations();
+
+	TArray<AActor*> GetStickers();
 
 	/** Checks if trigger provides correct parameter for action */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
@@ -92,7 +102,11 @@ public:
 
 	/** Show sound configuring gui element. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
-	void ShowActorParameterGui();
+	void ShowActorParameterGui(const TArray<AActor*>& actors);
+
+	/** Show sound configuring gui element. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
+	void ShowLocationParameterGui();
 
 	/** Show action options gui element. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")

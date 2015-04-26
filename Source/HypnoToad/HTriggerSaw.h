@@ -10,7 +10,7 @@
 class HYPNOTOAD_API HTriggerSaw : public HTrigger
 {
 public:
-	HTriggerSaw(AAICharacter* owner, UClass* cl) : HTrigger(owner), m_class(cl) {}
+	HTriggerSaw(AAICharacter* owner, AActor* actor) : HTrigger(owner), m_actor(actor) {}
 
 	FString GetMenuName() override
 	{
@@ -18,20 +18,15 @@ public:
 	}
 	HTrigger* CreateTrigger() override
 	{
-		return new HTriggerSaw(m_owner, m_class);
+		return new HTriggerSaw(m_owner, m_actor);
 	}
-	void CollectParameters()
-	{
-		m_class = ADecalActor::StaticClass();
-		HTrigger::CollectParameters();
-	}
-	AActor* ProvidedParameter() { return m_seenActor; }
+	void CollectParameters() override;
+	void SetActorParameter(AActor* actor) override;
 
 protected:
 	virtual bool IsTriggered() override;
 
 private:
-	UClass* m_class;
-	AActor* m_seenActor;
+	AActor* m_actor;
 
 };

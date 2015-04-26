@@ -133,7 +133,7 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 			{
 				FRotator rot = (-Hit.ImpactNormal).Rotation();
 				rot.Roll = 90;
-				ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.ImpactPoint, rot);
+				ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.ImpactPoint + Hit.ImpactNormal * 20, rot);
 				decal->GetDecal()->SetDecalMaterial(StickerMaterial);
 				decal->SetActorScale3D(FVector(30, 30, 30));
 				decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -348,11 +348,45 @@ TArray<AActor*> AHypnoToadCharacter::GetNpcAttackTargets()
 	return result;
 }
 
+TArray<AActor*> AHypnoToadCharacter::GetMarkedLocations()
+{
+	TArray<AActor*> result;
+	for (TActorIterator<APathPoint> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+		result.Add(*ActorItr);
+	return result;
+}
+
+TArray<AActor*> AHypnoToadCharacter::GetStickers()
+{
+	TArray<AActor*> result;
+	for (TActorIterator<ADecalActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+		result.Add(*ActorItr);
+	return result;
+}
+
 void AHypnoToadCharacter::PassActorParameter(AActor* actor)
 {
-	if (m_conversationWith == NULL || m_conversationWith->GetPendingAction() == NULL)
+	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger() == NULL)
 		return;
+	if (m_conversationWith->GetPendingAction() == NULL)
+	{
+		m_conversationWith->GetPendingTrigger()->SetActorParameter(actor);
+		return;
+	}
 	m_conversationWith->GetPendingAction()->SetActorParameter(actor);
+}
+
+void AHypnoToadCharacter::PassLocationParameter(FVector location)
+{
+	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger() == NULL)
+		return;
+	TSharedPtr<FVector> vector = TSharedPtr<FVector>(new FVector(location));
+	/*if (m_conversationWith->GetPendingAction() == NULL)
+	{
+		m_conversationWith->GetPendingTrigger()->SetVectorParameter(vector);
+		return;
+	}*/
+	m_conversationWith->GetPendingAction()->SetVectorParameter(vector);
 }
 
 bool AHypnoToadCharacter::TriggerReturnsParameter()

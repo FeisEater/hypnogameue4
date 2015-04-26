@@ -21,3 +21,9 @@ void HTrigger::SetSoundParameter(TSharedPtr<HSound> sound)
 	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
 	plr->ShowActionsGui();
 }
+
+void HTrigger::SetActorParameter(AActor* actor)
+{
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+	plr->ShowActionsGui();
+}

@@ -49,7 +49,7 @@ void AAICharacter::BeginPlay()
 	triggers.Add(t2);
 	triggers.Add(t3);
 
-	m_availableTriggers.Add(new HTriggerSaw(this, ADecalActor::StaticClass()));
+	m_availableTriggers.Add(new HTriggerSaw(this, NULL));
 	m_availableTriggers.Add(new HTriggerHeard(this, TSharedPtr<HSound>(new HGunShot(FVector::ZeroVector))));
 
 	m_availableActions.Add(new HActionAttack(this, NULL));
@@ -288,6 +288,8 @@ void AAICharacter::ActivateConversation(AHypnoToadCharacter* plr)
 void AAICharacter::EndConversation()
 {
 	m_havingConversation = false;
+	m_pendingAction = NULL;
+	m_pendingTrigger = NULL;
 }
 
 void AAICharacter::Hypnotize(AHypnoToadCharacter* plr)

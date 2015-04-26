@@ -13,7 +13,7 @@ void HActionAttack::CollectParameters()
 {
 	APlayerController* plrController = *(m_owner->GetWorld()->GetPlayerControllerIterator());
 	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
-	plr->ShowActorParameterGui();
+	plr->ShowActorParameterGui(plr->GetNpcAttackTargets());
 }
 
 void HActionAttack::SetActorParameter(AActor* actor)

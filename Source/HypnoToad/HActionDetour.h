@@ -16,10 +16,16 @@ public:
 	}
 	FString GetMenuName() override { return "Detour to..."; }
 	HAction* CreateAction() override { return new HActionDetour(m_owner, m_targetPosition); }
-	void CollectParameters() override
+	void CollectParameters() override;
+	void SetActorParameter(AActor* actor) override
 	{
-		m_targetPosition = TSharedPtr<FVector>(new FVector(0,0,0));
-		HAction::CollectParameters();
+		m_targetPosition = TSharedPtr<FVector>(new FVector(actor->GetActorLocation()));
+		HAction::SetActorParameter(actor);
+	}
+	void SetVectorParameter(TSharedPtr<FVector> vector) override
+	{
+		m_targetPosition = vector;
+		HAction::SetVectorParameter(vector);
 	}
 
 protected:
