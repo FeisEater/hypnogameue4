@@ -6,10 +6,10 @@
 
 bool HTriggerHeard::IsTriggered()
 {
-	TSharedPtr<HSound> sound = m_owner->HeardSound(m_sound);
-	if (sound.IsValid())
+	USound* sound = m_owner->HeardSound(m_sound);
+	if (sound != NULL)
 	{
-		m_soundSource = sound->GetOrigin();
+		m_soundSource = sound->Origin;
 		return true;
 	}
 	return false;
@@ -27,7 +27,7 @@ void HTriggerHeard::CollectParameters()
 	plr->ShowSoundParameterGui();
 }
 
-void HTriggerHeard::SetSoundParameter(TSharedPtr<HSound> sound)
+void HTriggerHeard::SetSoundParameter(USound* sound)
 {
 	m_sound = sound;
 	HTrigger::SetSoundParameter(sound);

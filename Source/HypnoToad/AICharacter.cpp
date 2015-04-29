@@ -12,6 +12,7 @@
 #include "HActionFreeze.h"
 #include "HTriggerSaw.h"
 #include "HypnoToadCharacter.h"
+#include "GunShot.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -42,7 +43,7 @@ void AAICharacter::BeginPlay()
 	t->SetAction(new HActionDetour(this, sawHypnotizedNpc->GetHypnotizedNpcLocation()));
 	HTrigger* t2 = new HTriggerSawPlayerHypnotizing(this);
 	t2->SetAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
-	HTrigger* t3 = new HTriggerHeard(this, TSharedPtr<HSound>(new HGunShot(FVector::ZeroVector)));
+	HTrigger* t3 = new HTriggerHeard(this, NewObject<UGunShot>());
 	HTriggerHeard* heard = (HTriggerHeard*)t3;
 	t3->SetAction(new HActionDetour(this, heard->GetSoundSource()));
 	triggers.Add(t);
@@ -50,7 +51,7 @@ void AAICharacter::BeginPlay()
 	triggers.Add(t3);
 
 	m_availableTriggers.Add(new HTriggerSaw(this, NULL));
-	m_availableTriggers.Add(new HTriggerHeard(this, TSharedPtr<HSound>(new HGunShot(FVector::ZeroVector))));
+	m_availableTriggers.Add(new HTriggerHeard(this, NewObject<UGunShot>()));
 
 	m_availableActions.Add(new HActionAttack(this, NULL));
 	m_availableActions.Add(new HActionDetour(this, NULL));
@@ -210,8 +211,9 @@ void AAICharacter::Shoot()
 				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ow"));
 		}
 	}
-	TSharedPtr<HSound> gunShot(new HGunShot(GetActorLocation()));
-	HSound::BroadCastSound(GetWorld(), gunShot);
+	USound* gunShot = NewObject<UGunShot>();
+	gunShot->Origin = GetActorLocation();
+	USound::BroadCastSound(GetWorld(), gunShot);
 }
 
 bool AAICharacter::CanSee(AActor* actor)
@@ -315,14 +317,14 @@ bool AAICharacter::IsHypnotized()
 	return m_hypnotizedBy != NULL;
 }
 
-void AAICharacter::HearSound(TSharedPtr<HSound> sound)
+void AAICharacter::HearSound(USound* sound)
 {
 	m_heardSounds.Add(sound);
 }
 
-TSharedPtr<HSound> AAICharacter::HeardSound(TSharedPtr<HSound> sound)
+USound* AAICharacter::HeardSound(USound* sound)
 {
-	for (TSharedPtr<HSound> snd : m_heardSounds)
+	for (USound* snd : m_heardSounds)
 	{
 		if (*snd == sound)
 			return snd;

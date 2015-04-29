@@ -3,7 +3,7 @@
 #pragma once
 
 #include "HAction.h"
-#include "HSound.h"
+#include "Sound.h"
 
 /**
  * 
@@ -22,7 +22,7 @@ public:
 	virtual FString GetMenuName() = 0;
 	virtual HTrigger* CreateTrigger() = 0;
 	virtual void CollectParameters();
-	virtual void SetSoundParameter(TSharedPtr<HSound> sound);
+	virtual void SetSoundParameter(USound* sound);
 	virtual void SetActorParameter(AActor* actor);
 	virtual AActor* ProvidedParameter() { return NULL; }
 

@@ -1,6 +1,7 @@
 // Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "GameFramework/Character.h"
+#include "Sound.h"
 #include "HypnoToadCharacter.generated.h"
 
 class AAICharacter;
@@ -111,6 +112,10 @@ public:
 	/** Show action options gui element. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowActionsGui();
+
+	/** Show notifier for sound */
+	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
+	void ShowSoundNotifier(USound* sound);
 
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void SayWord(FString word);

@@ -5,6 +5,8 @@
 #include "Engine.h"
 #include "AICharacter.h"
 #include "HTrigger.h"
+#include "Word.h"
+#include "GunShot.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AHypnoToadCharacter
@@ -168,7 +170,10 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 
 void AHypnoToadCharacter::SayWord(FString word)
 {
-	HSound::BroadCastSound(GetWorld(), TSharedPtr<HSound>(new HWord(GetActorLocation(), word)));
+	UWord* said = NewObject<UWord>();
+	said->Content = word;
+	said->Origin = GetActorLocation();
+	USound::BroadCastSound(GetWorld(), said);
 }
 
 AAICharacter* AHypnoToadCharacter::InterractsWithNPC(float range)
@@ -307,16 +312,19 @@ void AHypnoToadCharacter::CreateTriggerThroughIndex(int32 index)
 
 void AHypnoToadCharacter::PassGunShotParameter()
 {
-	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger())
+	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger() == NULL)
 		return;
-	m_conversationWith->GetPendingTrigger()->SetSoundParameter(TSharedPtr<HSound>(new HGunShot(FVector::ZeroVector)));
+	USound* gunShot = NewObject<UGunShot>();
+	m_conversationWith->GetPendingTrigger()->SetSoundParameter(gunShot);
 }
 
 void AHypnoToadCharacter::PassWordParameter(FString word)
 {
 	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger() == NULL)
 		return;
-	m_conversationWith->GetPendingTrigger()->SetSoundParameter(TSharedPtr<HSound>(new HWord(FVector::ZeroVector, word)));
+	UWord* said = NewObject<UWord>();
+	said->Content = word;
+	m_conversationWith->GetPendingTrigger()->SetSoundParameter(said);
 }
 
 TArray<FString> AHypnoToadCharacter::GetNpcActionNames()
