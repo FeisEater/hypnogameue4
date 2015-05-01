@@ -13,6 +13,8 @@
 #include "HTriggerSaw.h"
 #include "HypnoToadCharacter.h"
 #include "GunShot.h"
+#include "Word.h"
+#include "HActionSay.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -56,6 +58,7 @@ void AAICharacter::BeginPlay()
 	m_availableActions.Add(new HActionAttack(this, NULL));
 	m_availableActions.Add(new HActionDetour(this, NULL));
 	m_availableActions.Add(new HActionFreeze(this));
+	m_availableActions.Add(new HActionSay(this, NewObject<UWord>()));
 
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 

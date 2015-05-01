@@ -324,7 +324,12 @@ void AHypnoToadCharacter::PassWordParameter(FString word)
 		return;
 	UWord* said = NewObject<UWord>();
 	said->Content = word;
-	m_conversationWith->GetPendingTrigger()->SetSoundParameter(said);
+	if (m_conversationWith->GetPendingAction() == NULL)
+	{
+		m_conversationWith->GetPendingTrigger()->SetSoundParameter(said);
+		return;
+	}
+	m_conversationWith->GetPendingAction()->SetSoundParameter(said);
 }
 
 TArray<FString> AHypnoToadCharacter::GetNpcActionNames()

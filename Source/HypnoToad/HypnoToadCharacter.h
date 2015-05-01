@@ -101,9 +101,13 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowSoundParameterGui();
 
-	/** Show sound configuring gui element. */
+	/** Show actor configuring gui element. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowActorParameterGui(const TArray<AActor*>& actors);
+
+	/** Show text configuring gui element. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
+	void ShowTextParameterGui();
 
 	/** Show sound configuring gui element. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")

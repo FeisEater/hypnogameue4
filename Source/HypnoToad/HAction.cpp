@@ -24,3 +24,13 @@ void HAction::SetVectorParameter(TSharedPtr<FVector> vector)
 {
 	m_owner->AttachPendingTrigger();
 }
+
+void HAction::SetStringParameter(FString string)
+{
+	m_owner->AttachPendingTrigger();
+}
+
+void HAction::SetSoundParameter(USound* sound)
+{
+	m_owner->AttachPendingTrigger();
+}

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+#include "Sound.h"
 
 /**
  * 
@@ -18,6 +19,8 @@ public:
 	virtual void CollectParameters();
 	virtual void SetActorParameter(AActor* actor);
 	virtual void SetVectorParameter(TSharedPtr<FVector> vector);
+	virtual void SetSoundParameter(USound* sound);
+	virtual void SetStringParameter(FString string);
 
 protected:
 	virtual void RunAction() {}
