@@ -33,13 +33,22 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-	/** Fetches names of triggers of the npc with whom player interracts currently */
+	/** Fetches names of available triggers of the npc with whom player interracts currently */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	TArray<FString> GetNpcTriggerNames();
 
-	/** Fetches names of actions of the npc with whom player interracts currently */
+	/** Fetches names of available actions of the npc with whom player interracts currently */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	TArray<FString> GetNpcActionNames();
+
+	/** Fetches names of active triggers of the npc with whom player interracts currently */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	TArray<FString> GetNpcActiveTriggerNames();
+
+	/** Fetches names of active actions of the npc with whom player interracts currently */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	TArray<FString> GetNpcActiveActionNames();
+
 
 	/** Attaches a trigger to interracted npc via index */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
@@ -48,6 +57,10 @@ public:
 	/** Attaches an action to interracted npc via index */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void CreateActionThroughIndex(int32 index);
+
+	/** Finds trigger via index and changes action associated to it */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	void ChangeTriggersActionThroughIndex(int32 index);
 
 	/** Passes gunshot sound as parameter for pending trigger */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")

@@ -62,12 +62,17 @@ public:
 	{
 		return m_availableActions;
 	}
+	TArray<HTrigger*> GetActiveTriggers()
+	{
+		return triggers;
+	}
 	void PrepareTriggerViaIndex(int32 index);
 	void AttachPendingTrigger();
 	HTrigger* GetPendingTrigger()
 	{
 		return m_pendingTrigger;
 	}
+	void PrepareActiveTriggerViaIndex(int32 index);
 
 	void PrepareActionViaIndex(int32 index);
 	HAction* GetPendingAction()

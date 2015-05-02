@@ -345,17 +345,22 @@ void AAICharacter::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComp
 
 void AAICharacter::PrepareTriggerViaIndex(int32 index)
 {
-	m_pendingTrigger = m_availableTriggers[index];
+	m_pendingTrigger = m_availableTriggers[index]->CreateTrigger();
 	m_pendingTrigger->CollectParameters();
+}
+
+void AAICharacter::PrepareActiveTriggerViaIndex(int32 index)
+{
+	m_pendingTrigger = triggers[index];
 }
 
 void AAICharacter::AttachPendingTrigger()
 {
 	if (!m_pendingTrigger || !m_pendingAction)
 		return;
-	HTrigger* t = m_pendingTrigger->CreateTrigger();
-	t->SetAction(m_pendingAction->CreateAction());
-	triggers.Add(t);
+	m_pendingTrigger->SetAction(m_pendingAction);
+	if (!triggers.Contains(m_pendingTrigger))
+		triggers.Add(m_pendingTrigger);
 	m_pendingTrigger = NULL;
 	m_pendingAction = NULL;
 	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)GetWorld()->GetFirstPlayerController()->GetCharacter();
@@ -364,6 +369,6 @@ void AAICharacter::AttachPendingTrigger()
 
 void AAICharacter::PrepareActionViaIndex(int32 index)
 {
-	m_pendingAction = m_availableActions[index];
+	m_pendingAction = m_availableActions[index]->CreateAction();
 	m_pendingAction->CollectParameters();
 }

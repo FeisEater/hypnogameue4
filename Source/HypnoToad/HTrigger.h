@@ -17,6 +17,10 @@ public:
 
 	void Trigger();
 
+	HAction* GetAction()
+	{
+		return m_action;
+	}
 	void SetAction(HAction* action) { m_action = action; }
 
 	virtual FString GetMenuName() = 0;

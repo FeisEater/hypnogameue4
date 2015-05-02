@@ -300,6 +300,33 @@ TArray<FString> AHypnoToadCharacter::GetNpcTriggerNames()
 	return arrayOfTriggerNames;
 }
 
+TArray<FString> AHypnoToadCharacter::GetNpcActiveTriggerNames()
+{
+	if (m_conversationWith == NULL)
+		return TArray < FString >();
+	TArray<FString> arrayOfTriggerNames;
+	for (HTrigger* t : m_conversationWith->GetActiveTriggers())
+		arrayOfTriggerNames.Add(t->GetMenuName());
+	return arrayOfTriggerNames;
+}
+
+TArray<FString> AHypnoToadCharacter::GetNpcActiveActionNames()
+{
+	if (m_conversationWith == NULL)
+		return TArray < FString >();
+	TArray<FString> arrayOfActionNames;
+	for (HTrigger* t : m_conversationWith->GetActiveTriggers())
+	{
+		if (t->GetAction() == NULL)
+		{
+			arrayOfActionNames.Add("None");
+			continue;
+		}
+		arrayOfActionNames.Add(t->GetAction()->GetMenuName());
+	}
+	return arrayOfActionNames;
+}
+
 void AHypnoToadCharacter::CreateTriggerThroughIndex(int32 index)
 {
 	if (m_conversationWith == NULL)
@@ -308,6 +335,17 @@ void AHypnoToadCharacter::CreateTriggerThroughIndex(int32 index)
 		return;
 	}
 	m_conversationWith->PrepareTriggerViaIndex(index);
+}
+
+void AHypnoToadCharacter::ChangeTriggersActionThroughIndex(int32 index)
+{
+	if (m_conversationWith == NULL)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Something's wrong"));
+		return;
+	}
+	m_conversationWith->PrepareActiveTriggerViaIndex(index);
+	ShowActionsGui();
 }
 
 void AHypnoToadCharacter::PassGunShotParameter()

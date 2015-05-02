@@ -6,6 +6,8 @@
 
 bool HTriggerHeard::IsTriggered()
 {
+	if (m_sound == NULL)
+		return false;
 	USound* sound = m_owner->HeardSound(m_sound);
 	if (sound != NULL)
 	{
