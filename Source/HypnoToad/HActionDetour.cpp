@@ -36,5 +36,5 @@ void HActionDetour::CollectParameters()
 {
 	APlayerController* plrController = *(m_owner->GetWorld()->GetPlayerControllerIterator());
 	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
-	plr->ShowLocationParameterGui();
+	plr->ShowActorParameterGui(plr->GetMarkedLocations());
 }

@@ -177,10 +177,11 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 private:
-	void SetGUIMode(bool isGUI, AAICharacter* ai = NULL);
+	void SetGUIMode(bool isGUI);
 	AAICharacter* InterractsWithNPC(float range);
 	AAICharacter* m_conversationWith;
 	AAICharacter* m_hypnotized;
 	UClass* PathPointMarkerClass;
+	bool m_InGuiMode;
 };
 

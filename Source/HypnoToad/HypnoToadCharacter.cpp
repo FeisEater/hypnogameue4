@@ -50,11 +50,12 @@ AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitial
 	if (Blueprint.Object != NULL)
 		PathPointMarkerClass = (UClass*)Blueprint.Object->GeneratedClass;
 
+	m_InGuiMode = false;
 	//WidgetInstance = CreateWidget(this, WidgetTemplate);
 	//WidgetInstance->AddToViewport();
 }
 
-void AHypnoToadCharacter::SetGUIMode(bool isGUI, AAICharacter* ai)
+void AHypnoToadCharacter::SetGUIMode(bool isGUI)
 {
 	APlayerController* plr = (APlayerController*)GetController();
 
@@ -62,6 +63,7 @@ void AHypnoToadCharacter::SetGUIMode(bool isGUI, AAICharacter* ai)
 	plr->bEnableClickEvents = isGUI;
 	plr->bEnableMouseOverEvents = isGUI;
 	this->ShowConversationGUI(isGUI);
+	m_InGuiMode = isGUI;
 	//FInputModeGameAndUI input;
 	//input.SetLockMouseToViewport(isGUI);
 	//plr->SetInputMode(input);
@@ -96,7 +98,7 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 			{
 				m_conversationWith = ai;
 				ai->ActivateConversation(this);
-				SetGUIMode(true, ai);
+				SetGUIMode(true);
 			}
 		}
 	}
@@ -145,13 +147,9 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	if (plr->WasInputKeyJustPressed(EKeys::R))
-	{
-		SetGUIMode(true);
-		//HSound::BroadCastSound(GetWorld(), TSharedPtr<HSound>(new HWord(GetActorLocation(), TEXT("Test"))));
-	}
-	if (plr->WasInputKeyJustPressed(EKeys::T))
-		SetGUIMode(false);
+	if (plr->WasInputKeyJustPressed(EKeys::R) && m_conversationWith == NULL)
+		SetGUIMode(!m_InGuiMode);
+
 	if (plr->WasInputKeyJustPressed(EKeys::Tab) && PathPointMarkerClass)
 	{
 		FCollisionQueryParams Params;

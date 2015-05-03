@@ -15,6 +15,7 @@
 #include "GunShot.h"
 #include "Word.h"
 #include "HActionSay.h"
+#include "HActionIgnore.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -55,6 +56,7 @@ void AAICharacter::BeginPlay()
 	m_availableTriggers.Add(new HTriggerSaw(this, NULL));
 	m_availableTriggers.Add(new HTriggerHeard(this, NewObject<UGunShot>()));
 
+	m_availableActions.Add(new HActionIgnore(this));
 	m_availableActions.Add(new HActionAttack(this, NULL));
 	m_availableActions.Add(new HActionDetour(this, NULL));
 	m_availableActions.Add(new HActionFreeze(this));
