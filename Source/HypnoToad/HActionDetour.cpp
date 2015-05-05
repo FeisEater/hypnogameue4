@@ -16,6 +16,8 @@ void HActionDetour::RunAction()
 	}
 	else
 	{
+		if (FVector::Dist(*m_targetPosition, m_owner->GetActorLocation()) < 200)
+			return;
 		m_detourPoint = m_owner->GetWorld()->SpawnActor<APathPoint>(*m_targetPosition, FRotator::ZeroRotator);
 		APathPoint* NextNonOverridablePPoint = m_owner->GetNextPPoint();
 		for (int i = 0; i < 1000; ++i)

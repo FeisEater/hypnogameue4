@@ -85,7 +85,7 @@ public:
 
 	bool IsDead()
 	{
-		return m_dead;
+		return m_health <= 0;
 	}
 
 	UFUNCTION()
@@ -109,5 +109,5 @@ private:
 	HTrigger* m_pendingTrigger;
 	TArray<HAction*> m_availableActions;
 	HAction* m_pendingAction;
-	bool m_dead;
+	int32 m_health;
 };

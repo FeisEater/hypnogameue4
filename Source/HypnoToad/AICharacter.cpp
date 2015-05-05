@@ -41,6 +41,7 @@ void AAICharacter::BeginPlay()
 	m_hypnotizedBy = NULL;
 	m_attacking = false;
 	Discovered = false;
+	m_health = 3;
 
 	HTrigger* t = new HTriggerSawHypnotizedNpc(this);
 	HTriggerSawHypnotizedNpc* sawHypnotizedNpc = (HTriggerSawHypnotizedNpc*)t;
@@ -73,20 +74,17 @@ void AAICharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 	
-	if (GetName() == "Richard")
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, m_attacking ? TEXT("attacking") : TEXT("not attacking"));
-		if (PPoint)
-			DrawDebugBox(GetWorld(), PPoint->GetActorLocation(), FVector(100, 100, 100), FColor::Red);
-		else
-			GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("no ppoint"));
-	}
+	if (IsDead())	return;
 
 	for (HTrigger* t : triggers)
 	{
 		t->Trigger();
 	}
 
+	for (USound* s : m_heardSounds)
+	{
+		DeleteObject(s);
+	}
 	m_heardSounds.Empty();
 
 	if (m_rateOfFire > 0)
@@ -225,16 +223,21 @@ void AAICharacter::Shoot()
 		{
 			//if (Hit.Actor->IsA(AAICharacter::StaticClass()))
 			//	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Friendly fire"));
-			if (Hit.Actor->IsA(AAICharacter::StaticClass()) || Hit.Actor->IsA(AHypnoToadCharacter::StaticClass()))
+			if (Hit.Actor->IsA(AAICharacter::StaticClass()))// || Hit.Actor->IsA(AHypnoToadCharacter::StaticClass()))
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Hit somthing"));
-				USkeletalMeshComponent* mesh = (USkeletalMeshComponent*)Hit.Actor->GetComponentByClass(USkeletalMeshComponent::StaticClass());
-				if (mesh)
+				AAICharacter* ai = (AAICharacter*)(Hit.Actor.Get());
+				--ai->m_health;
+				if (ai->IsDead())
 				{
-					mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-					mesh->SetSimulatePhysics(true);
-					m_attacking = false;
-					m_currentEnemy = NULL;
+					ai->GetController()->StopMovement();
+					USkeletalMeshComponent* mesh = (USkeletalMeshComponent*)Hit.Actor->GetComponentByClass(USkeletalMeshComponent::StaticClass());
+					if (mesh)
+					{
+						mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+						mesh->SetSimulatePhysics(true);
+						m_attacking = false;
+						m_currentEnemy = NULL;
+					}
 				}
 			}
 		}
@@ -347,7 +350,8 @@ bool AAICharacter::IsHypnotized()
 
 void AAICharacter::HearSound(USound* sound)
 {
-	m_heardSounds.Add(sound);
+	if (!IsDead())
+		m_heardSounds.Add(sound);
 }
 
 USound* AAICharacter::HeardSound(USound* sound)
