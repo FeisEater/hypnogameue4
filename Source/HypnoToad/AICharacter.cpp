@@ -40,6 +40,7 @@ void AAICharacter::BeginPlay()
 	m_havingConversation = false;
 	m_hypnotizedBy = NULL;
 	m_attacking = false;
+	Discovered = false;
 
 	HTrigger* t = new HTriggerSawHypnotizedNpc(this);
 	HTriggerSawHypnotizedNpc* sawHypnotizedNpc = (HTriggerSawHypnotizedNpc*)t;
@@ -72,6 +73,15 @@ void AAICharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 	
+	if (GetName() == "Richard")
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, m_attacking ? TEXT("attacking") : TEXT("not attacking"));
+		if (PPoint)
+			DrawDebugBox(GetWorld(), PPoint->GetActorLocation(), FVector(100, 100, 100), FColor::Red);
+		else
+			GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("no ppoint"));
+	}
+
 	for (HTrigger* t : triggers)
 	{
 		t->Trigger();
@@ -138,14 +148,17 @@ void AAICharacter::Tick( float DeltaTime )
 			UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 			m_rebuildPathTime = 0.5f;
 		}
-		UNavigationPath* path = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), PPoint);
-		if (path && path->PathPoints.Num() > 0)
+		if (Discovered)
 		{
-			FVector prev = path->PathPoints[0];
-			for (FVector v : path->PathPoints)
+			UNavigationPath* path = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), PPoint);
+			if (path && path->PathPoints.Num() > 0)
 			{
-				DrawDebugLine(GetWorld(), prev, v, FColor::Green, false, -1.f, -1, 3);
-				prev = v;
+				FVector prev = path->PathPoints[0];
+				for (FVector v : path->PathPoints)
+				{
+					DrawDebugLine(GetWorld(), prev, v, FColor::Green, false, -1.f, -1, 3);
+					prev = v;
+				}
 			}
 		}
 		GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -210,10 +223,20 @@ void AAICharacter::Shoot()
 	{
 		if (!Hit.Component.Get()->IsA(UModelComponent::StaticClass()))
 		{
-			if (Hit.Actor->IsA(AAICharacter::StaticClass()))
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Friendly fire"));
-			if (Hit.Actor->IsA(AHypnoToadCharacter::StaticClass()))
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ow"));
+			//if (Hit.Actor->IsA(AAICharacter::StaticClass()))
+			//	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Friendly fire"));
+			if (Hit.Actor->IsA(AAICharacter::StaticClass()) || Hit.Actor->IsA(AHypnoToadCharacter::StaticClass()))
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Hit somthing"));
+				USkeletalMeshComponent* mesh = (USkeletalMeshComponent*)Hit.Actor->GetComponentByClass(USkeletalMeshComponent::StaticClass());
+				if (mesh)
+				{
+					mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+					mesh->SetSimulatePhysics(true);
+					m_attacking = false;
+					m_currentEnemy = NULL;
+				}
+			}
 		}
 	}
 	USound* gunShot = NewObject<UGunShot>();
@@ -331,6 +354,8 @@ USound* AAICharacter::HeardSound(USound* sound)
 {
 	for (USound* snd : m_heardSounds)
 	{
+		if (snd == NULL)
+			continue;
 		if (*snd == sound)
 			return snd;
 	}

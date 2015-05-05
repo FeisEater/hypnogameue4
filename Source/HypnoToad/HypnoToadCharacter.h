@@ -178,6 +178,7 @@ public:
 
 private:
 	void SetGUIMode(bool isGUI);
+	void DiscoverNPCs();
 	AAICharacter* InterractsWithNPC(float range);
 	AAICharacter* m_conversationWith;
 	AAICharacter* m_hypnotized;

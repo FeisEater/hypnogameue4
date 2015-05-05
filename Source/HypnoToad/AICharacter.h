@@ -80,6 +80,14 @@ public:
 		return m_pendingAction;
 	}
 
+	UPROPERTY(BlueprintReadOnly, Category = "AI")
+	bool Discovered;
+
+	bool IsDead()
+	{
+		return m_dead;
+	}
+
 	UFUNCTION()
 	void OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -101,4 +109,5 @@ private:
 	HTrigger* m_pendingTrigger;
 	TArray<HAction*> m_availableActions;
 	HAction* m_pendingAction;
+	bool m_dead;
 };

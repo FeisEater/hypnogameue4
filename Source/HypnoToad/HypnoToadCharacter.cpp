@@ -164,6 +164,20 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		}
 	}
 
+	DiscoverNPCs();
+}
+
+void AHypnoToadCharacter::DiscoverNPCs()
+{
+	for (TActorIterator<AAICharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+	{
+		if (ActorItr->Discovered)
+			continue;
+		if (*ActorItr == InterractsWithNPC(10000))
+		{
+			ActorItr->Discovered = true;
+		}
+	}
 }
 
 void AHypnoToadCharacter::SayWord(FString word)
@@ -392,7 +406,10 @@ TArray<AActor*> AHypnoToadCharacter::GetNpcAttackTargets()
 {
 	TArray<AActor*> result;
 	for (TActorIterator<AAICharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-		result.Add(*ActorItr);
+	{
+		if (ActorItr->Discovered)
+			result.Add(*ActorItr);
+	}
 	result.Add(this);
 	return result;
 }
