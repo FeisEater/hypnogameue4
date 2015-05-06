@@ -6,8 +6,11 @@
 
 void HAction::Execute()
 {
-	if (m_overrideAttackState || !m_owner->IsAttacking())
-		RunAction();
+	if (!m_workWhileHypnotized && m_owner->IsHypnotized())
+		return;
+	if (!m_overrideAttackState && m_owner->IsAttacking())
+		return;
+	RunAction();
 }
 
 void HAction::CollectParameters()

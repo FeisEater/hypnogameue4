@@ -16,6 +16,7 @@
 #include "Word.h"
 #include "HActionSay.h"
 #include "HActionIgnore.h"
+#include "HActionEndHypnotization.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -59,6 +60,7 @@ void AAICharacter::BeginPlay()
 	m_availableTriggers.Add(new HTriggerHeard(this, NewObject<UGunShot>()));
 
 	m_availableActions.Add(new HActionIgnore(this));
+	m_availableActions.Add(new HActionEndHypnotization(this));
 	m_availableActions.Add(new HActionAttack(this, NULL));
 	m_availableActions.Add(new HActionDetour(this, NULL));
 	m_availableActions.Add(new HActionFreeze(this));
@@ -227,6 +229,8 @@ void AAICharacter::Shoot()
 			{
 				AAICharacter* ai = (AAICharacter*)(Hit.Actor.Get());
 				--ai->m_health;
+				if (!ai->IsAttacking())
+					ai->Attack(this);
 				if (ai->IsDead())
 				{
 					ai->GetController()->StopMovement();

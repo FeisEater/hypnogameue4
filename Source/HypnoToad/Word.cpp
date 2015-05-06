@@ -10,7 +10,9 @@ UWord::UWord(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitiali
 
 bool UWord::Compare(USound* rhs)
 {
-	if (!rhs->IsA(UWord::StaticClass()))
+	//if (!rhs->IsA(UWord::StaticClass()))
+	//	return false;
+	if (rhs->GetClass() != UWord::StaticClass())
 		return false;
 	UWord* rhsWord = (UWord*)rhs;
 	return Content == rhsWord->Content;

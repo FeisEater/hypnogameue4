@@ -10,5 +10,5 @@ UGunShot::UGunShot(const FObjectInitializer& ObjectInitializer) : Super(ObjectIn
 
 bool UGunShot::Compare(USound* rhs)
 {
-	return rhs->IsA(UGunShot::StaticClass());
+	return rhs->GetClass() == UGunShot::StaticClass();
 }

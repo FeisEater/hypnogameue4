@@ -6,7 +6,7 @@
 
 void HTrigger::Trigger()
 {
-	if (IsTriggered() && m_action && !m_owner->IsHypnotized())
+	if (IsTriggered() && m_action)// && !m_owner->IsHypnotized())
 		m_action->Execute();
 }
 
