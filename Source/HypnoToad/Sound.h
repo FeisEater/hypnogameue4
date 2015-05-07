@@ -21,6 +21,16 @@ public:
 
 	bool operator==(USound* rhs)
 	{
+		if (!IsValidLowLevel())
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("left side fucked up"));
+			return false;
+		}
+		if (!rhs->IsValidLowLevel())
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, TEXT("right side fucked up"));
+			return false;
+		}
 		return Compare(rhs);
 	}
 

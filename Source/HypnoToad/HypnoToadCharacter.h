@@ -137,6 +137,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void SayWord(FString word);
 
+	UPROPERTY(BlueprintReadWrite, Category = "HypnoToad")
+	bool InRestrictedArea;
+
 	bool IsHypnotizing();
 
 protected:

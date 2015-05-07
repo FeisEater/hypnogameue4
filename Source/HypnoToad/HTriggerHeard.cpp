@@ -31,6 +31,8 @@ void HTriggerHeard::CollectParameters()
 
 void HTriggerHeard::SetSoundParameter(USound* sound)
 {
+	m_sound->ConditionalBeginDestroy();
 	m_sound = sound;
+	m_sound->AddToRoot();
 	HTrigger::SetSoundParameter(sound);
 }

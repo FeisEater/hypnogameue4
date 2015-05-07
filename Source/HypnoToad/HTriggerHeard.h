@@ -9,7 +9,11 @@
 class HYPNOTOAD_API HTriggerHeard : public HTrigger
 {
 public:
-	HTriggerHeard(AAICharacter* owner, USound* sound) : HTrigger(owner), m_sound(sound) {}
+	HTriggerHeard(AAICharacter* owner, USound* sound) : HTrigger(owner), m_sound(sound)
+	{
+		if (m_sound)
+			m_sound->AddToRoot();
+	}
 	TSharedPtr<FVector> GetSoundSource();
 
 	FString GetMenuName() override
@@ -28,5 +32,6 @@ protected:
 
 private:
 	USound* m_sound;
+
 	FVector m_soundSource;
 };

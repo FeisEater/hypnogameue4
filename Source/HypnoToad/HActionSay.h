@@ -9,7 +9,11 @@
 class HYPNOTOAD_API HActionSay : public HAction
 {
 public:
-	HActionSay(AAICharacter* owner, USound* word, bool overrideAttack = false) : HAction(owner, overrideAttack), m_sound(word) {}
+	HActionSay(AAICharacter* owner, USound* word, bool overrideAttack = false) : HAction(owner, overrideAttack), m_sound(word)
+	{
+		if (m_sound)
+			m_sound->AddToRoot();
+	}
 	FString GetMenuName() override { return "Say..."; }
 	HAction* CreateAction() override { return new HActionSay(m_owner, m_sound); }
 	void CollectParameters() override;

@@ -20,6 +20,8 @@ void HActionSay::CollectParameters()
 
 void HActionSay::SetSoundParameter(USound* sound)
 {
+	m_sound->ConditionalBeginDestroy();
 	m_sound = sound;
+	m_sound->AddToRoot();
 	HAction::SetSoundParameter(sound);
 }

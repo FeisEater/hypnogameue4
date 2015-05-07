@@ -17,6 +17,7 @@
 #include "HActionSay.h"
 #include "HActionIgnore.h"
 #include "HActionEndHypnotization.h"
+#include "HTriggerSawPlayerInRestricted.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -52,9 +53,12 @@ void AAICharacter::BeginPlay()
 	HTrigger* t3 = new HTriggerHeard(this, NewObject<UGunShot>());
 	HTriggerHeard* heard = (HTriggerHeard*)t3;
 	t3->SetAction(new HActionDetour(this, heard->GetSoundSource()));
+	HTrigger* t4 = new HTriggerSawPlayerInRestricted(this);
+	t4->SetAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
 	triggers.Add(t);
 	triggers.Add(t2);
 	triggers.Add(t3);
+	triggers.Add(t4);
 
 	m_availableTriggers.Add(new HTriggerSaw(this, NULL));
 	m_availableTriggers.Add(new HTriggerHeard(this, NewObject<UGunShot>()));
@@ -69,6 +73,13 @@ void AAICharacter::BeginPlay()
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AAICharacter::OnOverlapBegin);
+
+	for (UActorComponent* gunMesh : GetComponentsByClass(UStaticMeshComponent::StaticClass()))
+	{
+		if (!gunMesh || gunMesh->GetName() != "Gun")
+			continue;
+		gunMesh->DestroyComponent();
+	}
 }
 
 // Called every frame

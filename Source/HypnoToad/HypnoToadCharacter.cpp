@@ -51,6 +51,8 @@ AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitial
 		PathPointMarkerClass = (UClass*)Blueprint.Object->GeneratedClass;
 
 	m_InGuiMode = false;
+	InRestrictedArea = false;
+
 	//WidgetInstance = CreateWidget(this, WidgetTemplate);
 	//WidgetInstance->AddToViewport();
 }
