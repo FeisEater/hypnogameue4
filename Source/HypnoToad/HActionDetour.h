@@ -15,7 +15,7 @@ public:
 		m_detourPoint = NULL;
 	}
 	FString GetMenuName() override { return "Detour to..."; }
-	HAction* CreateAction() override { return new HActionDetour(m_owner, m_targetPosition); }
+	HAction* CreateAction() override { return new HActionDetour(m_owner, m_targetPosition, m_overrideAttackState); }
 	void CollectParameters() override;
 	void SetActorParameter(AActor* actor) override
 	{

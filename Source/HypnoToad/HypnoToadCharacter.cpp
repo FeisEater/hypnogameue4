@@ -108,7 +108,7 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 	if (plr->WasInputKeyJustPressed(EKeys::Q))
 	{
 		AAICharacter* ai = InterractsWithNPC(200);
-		if (ai && !m_hypnotized)
+		if (ai && !m_hypnotized && !ai->IsAttacking())
 		{
 			m_hypnotized = ai;
 			ai->Hypnotize(this);

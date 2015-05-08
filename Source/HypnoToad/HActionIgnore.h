@@ -10,7 +10,7 @@ class HYPNOTOAD_API HActionIgnore : public HAction
 public:
 	HActionIgnore(AAICharacter* owner, bool overrideAttack = false) : HAction(owner, overrideAttack) {}
 	FString GetMenuName() override { return "Ignore"; }
-	HAction* CreateAction() override { return new HActionIgnore(m_owner); }
+	HAction* CreateAction() override { return new HActionIgnore(m_owner, m_overrideAttackState); }
 
 protected:
 	virtual void RunAction() override;

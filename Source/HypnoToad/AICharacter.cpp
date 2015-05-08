@@ -18,6 +18,7 @@
 #include "HActionIgnore.h"
 #include "HActionEndHypnotization.h"
 #include "HTriggerSawPlayerInRestricted.h"
+#include "HActionForgetEnemy.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -69,16 +70,20 @@ void AAICharacter::BeginPlay()
 	m_availableActions.Add(new HActionDetour(this, NULL));
 	m_availableActions.Add(new HActionFreeze(this));
 	m_availableActions.Add(new HActionSay(this, NewObject<UWord>()));
+	m_availableActions.Add(new HActionForgetEnemy(this, true));
 
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AAICharacter::OnOverlapBegin);
 
-	for (UActorComponent* gunMesh : GetComponentsByClass(UStaticMeshComponent::StaticClass()))
+	if (!Armed)
 	{
-		if (!gunMesh || gunMesh->GetName() != "Gun")
-			continue;
-		gunMesh->DestroyComponent();
+		for (UActorComponent* gunMesh : GetComponentsByClass(UStaticMeshComponent::StaticClass()))
+		{
+			if (!gunMesh || gunMesh->GetName() != "Gun")
+				continue;
+			gunMesh->DestroyComponent();
+		}
 	}
 }
 
@@ -103,12 +108,13 @@ void AAICharacter::Tick( float DeltaTime )
 	if (m_rateOfFire > 0)
 		m_rateOfFire -= DeltaTime;
 
-	if (CanSee(m_currentEnemy))
+	if (CanSee(m_currentEnemy) && !IsHypnotized())
 		m_attacking = true;
 
 	if (m_attacking)
 	{
-		DrawDebugBox(GetWorld(), m_lastEnemyPosition, FVector(100, 100, 100), FColor::Red);
+		if (FVector::Dist(m_currentEnemy->GetActorLocation(), m_lastEnemyPosition) > 200)
+			DrawDebugBox(GetWorld(), m_lastEnemyPosition, FVector(50, 50, 100), FColor::Red);
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 		m_rebuildPathTime -= DeltaTime;
@@ -143,9 +149,8 @@ void AAICharacter::Tick( float DeltaTime )
 			if (UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetActorLocation(), m_lastEnemyPosition)->GetPathLength() < 300)
 			{
 				m_timeToCare -= DeltaTime;
-				GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, FString::SanitizeFloat(m_timeToCare));
 				if (m_timeToCare <= 0)
-					m_attacking = false;
+					StopAttack(false);
 			}
 		}
 		if (m_rebuildPathTime <= 0)
@@ -216,10 +221,10 @@ void AAICharacter::Shoot()
 	if (m_rateOfFire > 0)
 		return;
 	m_rateOfFire = 0.5f;
-	const FName TraceTag("MyTraceTag");
-	GetWorld()->DebugDrawTraceTag = TraceTag;
+	//const FName TraceTag("MyTraceTag");
+	//GetWorld()->DebugDrawTraceTag = TraceTag;
 	FCollisionQueryParams Params;
-	Params.TraceTag = TraceTag;
+	//Params.TraceTag = TraceTag;
 	Params.AddIgnoredActor(this);
 	FHitResult Hit;
 	FVector Start = GetActorLocation();
@@ -232,6 +237,7 @@ void AAICharacter::Shoot()
 	FVector End = Start + (Dir * 1000000);
 	if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params))
 	{
+		DrawDebugLine(GetWorld(), Start, Hit.ImpactPoint, FColor::Red, false, 0.25f, -1, 2);
 		if (!Hit.Component.Get()->IsA(UModelComponent::StaticClass()))
 		{
 			//if (Hit.Actor->IsA(AAICharacter::StaticClass()))
@@ -239,27 +245,39 @@ void AAICharacter::Shoot()
 			if (Hit.Actor->IsA(AAICharacter::StaticClass()))// || Hit.Actor->IsA(AHypnoToadCharacter::StaticClass()))
 			{
 				AAICharacter* ai = (AAICharacter*)(Hit.Actor.Get());
-				--ai->m_health;
-				if (!ai->IsAttacking())
-					ai->Attack(this);
-				if (ai->IsDead())
-				{
-					ai->GetController()->StopMovement();
-					USkeletalMeshComponent* mesh = (USkeletalMeshComponent*)Hit.Actor->GetComponentByClass(USkeletalMeshComponent::StaticClass());
-					if (mesh)
-					{
-						mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-						mesh->SetSimulatePhysics(true);
-						m_attacking = false;
-						m_currentEnemy = NULL;
-					}
-				}
+				Hurt(ai);
 			}
 		}
 	}
 	USound* gunShot = NewObject<UGunShot>();
 	gunShot->Origin = GetActorLocation();
 	USound::BroadCastSound(GetWorld(), gunShot);
+}
+
+void AAICharacter::Hurt(AAICharacter* victim)
+{
+	if (!Armed)
+		return;
+	--victim->m_health;
+	if (!victim->IsAttacking())
+		victim->Attack(this);
+	if (victim->IsDead())
+	{
+		victim->GetController()->StopMovement();
+		USkeletalMeshComponent* mesh = (USkeletalMeshComponent*)victim->GetComponentByClass(USkeletalMeshComponent::StaticClass());
+		if (mesh)
+		{
+			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			mesh->SetSimulatePhysics(true);
+			StopAttack(true);
+			for (UActorComponent* gunMesh : GetComponentsByClass(UStaticMeshComponent::StaticClass()))
+			{
+				if (!gunMesh || gunMesh->GetName() != "Gun")
+					continue;
+				gunMesh->DestroyComponent();
+			}
+		}
+	}
 }
 
 bool AAICharacter::CanSee(AActor* actor)
@@ -281,11 +299,19 @@ bool AAICharacter::CanSee(AActor* actor)
 
 void AAICharacter::Attack(AActor* actor)
 {
-	m_attacking = true;
+	if (!Armed || IsHypnotized())
+		return;
 	m_currentEnemy = actor;
-	m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
-	m_timeToCare = 5;
+	m_timeToCare = 0;
 	m_scanPosition = 0;
+	EndConversation();
+}
+
+void AAICharacter::StopAttack(bool forgetEnemy)
+{
+	m_attacking = false;
+	if (forgetEnemy)
+		m_currentEnemy = NULL;
 }
 
 bool AAICharacter::IsAttacking()

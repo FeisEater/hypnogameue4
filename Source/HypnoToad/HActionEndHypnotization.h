@@ -14,7 +14,7 @@ public:
 		m_workWhileHypnotized = true;
 	}
 	FString GetMenuName() override { return "End hypnotization"; }
-	HAction* CreateAction() override { return new HActionEndHypnotization(m_owner); }
+	HAction* CreateAction() override { return new HActionEndHypnotization(m_owner, m_overrideAttackState); }
 
 protected:
 	virtual void RunAction() override;

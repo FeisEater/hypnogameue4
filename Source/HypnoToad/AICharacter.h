@@ -34,7 +34,9 @@ public:
 	bool CanSee(AActor* actor);
 	void Attack(AActor* actor);
 	bool IsAttacking();
+	void StopAttack(bool forgetEnemy);
 	void Shoot();
+	void Hurt(AAICharacter* victim);
 
 	APathPoint* GetNextPPoint();
 	void SetNextPPoint(APathPoint* pp);
@@ -82,6 +84,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "AI")
 	bool Discovered;
+
+	UPROPERTY(EditAnywhere, Category = "AI")
+	bool Armed;
 
 	bool IsDead()
 	{
