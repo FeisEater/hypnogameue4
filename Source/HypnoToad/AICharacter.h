@@ -34,6 +34,10 @@ public:
 	bool CanSee(AActor* actor);
 	void Attack(AActor* actor);
 	bool IsAttacking();
+	AActor* GetEnemy()
+	{
+		return m_currentEnemy;
+	}
 	void StopAttack(bool forgetEnemy);
 	void Shoot();
 	void Hurt(AAICharacter* victim);
@@ -47,7 +51,10 @@ public:
 
 	void Hypnotize(AHypnoToadCharacter* plr);
 	void EndHypnotization();
+
+	UFUNCTION(BlueprintCallable, Category = AI)
 	bool IsHypnotized();
+	
 	void StayStillWhileHypnotized();
 	void HearSound(USound* sound);
 	USound* HeardSound(USound* sound);
@@ -64,7 +71,7 @@ public:
 	{
 		return m_availableActions;
 	}
-	TArray<HTrigger*> GetActiveTriggers()
+	TArray<HTrigger*>& GetActiveTriggers()
 	{
 		return triggers;
 	}

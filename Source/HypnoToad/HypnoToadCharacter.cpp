@@ -304,6 +304,11 @@ bool AHypnoToadCharacter::IsHypnotizing()
 	return m_hypnotized != NULL;
 }
 
+AAICharacter* AHypnoToadCharacter::HasConversationWith()
+{
+	return m_conversationWith;
+}
+
 TArray<FString> AHypnoToadCharacter::GetNpcTriggerNames()
 {
 	if (m_conversationWith == NULL)

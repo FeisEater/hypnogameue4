@@ -9,7 +9,10 @@
 class HYPNOTOAD_API HActionAttack : public HAction
 {
 public:
-	HActionAttack(AAICharacter* owner, class AActor* target, bool overrideAttack = true) : HAction(owner, overrideAttack), m_target(target) {}
+	HActionAttack(AAICharacter* owner, class AActor* target, bool overrideAttack = true) : HAction(owner, overrideAttack), m_target(target)
+	{
+		m_actionCount = 1;
+	}
 	FString GetMenuName() override { return "Attack..."; }
 	HAction* CreateAction() override { return new HActionAttack(m_owner, m_target, m_overrideAttackState); }
 	void CollectParameters() override;

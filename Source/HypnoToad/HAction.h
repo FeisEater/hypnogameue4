@@ -8,6 +8,13 @@
  */
 class AAICharacter;
 
+/*enum class HConsumptionMethod
+{
+	Indefinate,
+	Count,
+	Time
+};*/
+
 class HYPNOTOAD_API HAction
 {
 public:
@@ -24,8 +31,11 @@ public:
 
 protected:
 	virtual void RunAction() {}
+	void Consume();
 
 	AAICharacter* m_owner;
 	bool m_overrideAttackState;
 	bool m_workWhileHypnotized;
+	//HConsumptionMethod m_conMethod;
+	float m_actionCount;
 };

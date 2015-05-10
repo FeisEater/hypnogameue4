@@ -62,14 +62,14 @@ void AAICharacter::BeginPlay()
 	triggers.Add(t4);
 
 	m_availableTriggers.Add(new HTriggerSaw(this, NULL));
-	m_availableTriggers.Add(new HTriggerHeard(this, NewObject<UGunShot>()));
+	m_availableTriggers.Add(new HTriggerHeard(this, NULL));
 
 	m_availableActions.Add(new HActionIgnore(this));
 	m_availableActions.Add(new HActionEndHypnotization(this));
 	m_availableActions.Add(new HActionAttack(this, NULL));
 	m_availableActions.Add(new HActionDetour(this, NULL));
 	m_availableActions.Add(new HActionFreeze(this));
-	m_availableActions.Add(new HActionSay(this, NewObject<UWord>()));
+	m_availableActions.Add(new HActionSay(this, NULL));
 	m_availableActions.Add(new HActionForgetEnemy(this, true));
 
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
@@ -270,7 +270,7 @@ void AAICharacter::Hurt(AAICharacter* victim)
 			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 			mesh->SetSimulatePhysics(true);
 			StopAttack(true);
-			for (UActorComponent* gunMesh : GetComponentsByClass(UStaticMeshComponent::StaticClass()))
+			for (UActorComponent* gunMesh : victim->GetComponentsByClass(UStaticMeshComponent::StaticClass()))
 			{
 				if (!gunMesh || gunMesh->GetName() != "Gun")
 					continue;

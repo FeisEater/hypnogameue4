@@ -3,12 +3,16 @@
 #include "HypnoToad.h"
 #include "HActionDetour.h"
 #include "AICharacter.h"
+#include "Runtime/Engine/Classes/AI/Navigation/NavigationPath.h"
 
 void HActionDetour::RunAction()
 {
 	if (m_detourPoint && FVector::Dist(*m_targetPosition, m_detourPoint->GetActorLocation()) < 200)
 		return;
 	if (FVector::Dist(*m_targetPosition, m_owner->GetActorLocation()) < 200)
+		return;
+	float dist = UNavigationSystem::FindPathToLocationSynchronously(m_owner->GetWorld(), m_owner->GetActorLocation(), *m_targetPosition)->GetPathLength();
+	if (m_maxDistance > 0 && dist > m_maxDistance)
 		return;
 	if (m_detourPoint)
 		m_detourPoint->Destroy();

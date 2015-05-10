@@ -14,7 +14,7 @@ public:
 		if (m_sound)
 			m_sound->AddToRoot();
 	}
-	FString GetMenuName() override { return "Say..."; }
+	FString GetMenuName() override;
 	HAction* CreateAction() override { return new HActionSay(m_owner, m_sound, m_overrideAttackState); }
 	void CollectParameters() override;
 	void SetSoundParameter(USound* sound) override;

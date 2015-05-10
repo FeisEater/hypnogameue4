@@ -27,3 +27,13 @@ void HTrigger::SetActorParameter(AActor* actor)
 	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
 	plr->ShowActionsGui();
 }
+
+void HTrigger::DiscardTrigger()
+{
+	if (m_defaultAction != NULL)
+	{
+		m_action = m_defaultAction;
+		return;
+	}
+	m_owner->GetActiveTriggers().Remove(this);
+}

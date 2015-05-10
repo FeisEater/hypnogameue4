@@ -10,12 +10,13 @@
 class HYPNOTOAD_API HActionDetour : public HAction
 {
 public:
-	HActionDetour(AAICharacter* owner, TSharedPtr<FVector> target, bool overrideAttack = false) : HAction(owner, overrideAttack), m_targetPosition(target)
+	HActionDetour(AAICharacter* owner, TSharedPtr<FVector> target, float maxDist = 3000, bool overrideAttack = false) : 
+		HAction(owner, overrideAttack), m_targetPosition(target), m_maxDistance(maxDist)
 	{
 		m_detourPoint = NULL;
 	}
 	FString GetMenuName() override { return "Detour to..."; }
-	HAction* CreateAction() override { return new HActionDetour(m_owner, m_targetPosition, m_overrideAttackState); }
+	HAction* CreateAction() override { return new HActionDetour(m_owner, m_targetPosition, m_maxDistance, m_overrideAttackState); }
 	void CollectParameters() override;
 	void SetActorParameter(AActor* actor) override
 	{
@@ -34,4 +35,5 @@ protected:
 private:
 	TSharedPtr<FVector> m_targetPosition;
 	class APathPoint* m_detourPoint;
+	float m_maxDistance;
 };

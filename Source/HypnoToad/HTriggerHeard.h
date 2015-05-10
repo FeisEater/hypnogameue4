@@ -16,10 +16,7 @@ public:
 	}
 	TSharedPtr<FVector> GetSoundSource();
 
-	FString GetMenuName() override
-	{
-		return "When heard...";
-	}
+	FString GetMenuName() override;
 	HTrigger* CreateTrigger() override
 	{
 		return new HTriggerHeard(m_owner, m_sound);

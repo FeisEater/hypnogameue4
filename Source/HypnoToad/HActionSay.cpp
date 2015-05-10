@@ -20,8 +20,20 @@ void HActionSay::CollectParameters()
 
 void HActionSay::SetSoundParameter(USound* sound)
 {
-	m_sound->ConditionalBeginDestroy();
+	USound* oldSound = m_sound;
 	m_sound = sound;
 	m_sound->AddToRoot();
+	if (oldSound->IsValidLowLevel())
+		oldSound->ConditionalBeginDestroy();
 	HAction::SetSoundParameter(sound);
+}
+
+FString HActionSay::GetMenuName()
+{
+	FString soundName = "...";
+	if (m_sound && m_sound->IsA(UWord::StaticClass()))
+	{
+		soundName = "'" + ((UWord*)m_sound)->Content + "'";
+	}
+	return "Say " + soundName;
 }

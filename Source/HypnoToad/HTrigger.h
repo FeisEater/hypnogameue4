@@ -13,7 +13,10 @@ class AAICharacter;
 class HYPNOTOAD_API HTrigger
 {
 public:
-	HTrigger(AAICharacter* owner) : m_owner(owner) {}
+	HTrigger(AAICharacter* owner) : m_owner(owner)
+	{
+		m_defaultAction = NULL;
+	}
 
 	void Trigger();
 
@@ -22,6 +25,12 @@ public:
 		return m_action;
 	}
 	void SetAction(HAction* action) { m_action = action; }
+	void SetIndefinateAction(HAction* action)
+	{
+		m_defaultAction = action;
+		m_action = action;
+	}
+	void DiscardTrigger();
 
 	virtual FString GetMenuName() = 0;
 	virtual HTrigger* CreateTrigger() = 0;
@@ -35,4 +44,5 @@ protected:
 	
 	AAICharacter* m_owner;
 	HAction* m_action;
+	HAction* m_defaultAction;
 };

@@ -3,6 +3,8 @@
 #include "HypnoToad.h"
 #include "HTriggerHeard.h"
 #include "AICharacter.h"
+#include "Word.h"
+#include "GunShot.h"
 
 bool HTriggerHeard::IsTriggered()
 {
@@ -31,8 +33,22 @@ void HTriggerHeard::CollectParameters()
 
 void HTriggerHeard::SetSoundParameter(USound* sound)
 {
-	m_sound->ConditionalBeginDestroy();
+	USound* oldSound = m_sound;
 	m_sound = sound;
 	m_sound->AddToRoot();
+	if (oldSound->IsValidLowLevel())
+		oldSound->ConditionalBeginDestroy();
 	HTrigger::SetSoundParameter(sound);
+}
+
+FString HTriggerHeard::GetMenuName()
+{
+	FString soundName = "...";
+	if (m_sound && m_sound->IsA(UWord::StaticClass()))
+	{
+		soundName = "word '" + ((UWord*)m_sound)->Content + "'";
+	}
+	if (m_sound && m_sound->IsA(UGunShot::StaticClass()))
+		soundName = "gunshot";
+	return "When heard " + soundName;
 }

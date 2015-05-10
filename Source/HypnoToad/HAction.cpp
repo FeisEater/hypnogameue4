@@ -37,3 +37,19 @@ void HAction::SetSoundParameter(USound* sound)
 {
 	m_owner->AttachPendingTrigger();
 }
+
+void HAction::Consume()
+{
+	--m_actionCount;
+	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::SanitizeFloat(m_actionCount));
+	if (m_actionCount <= 0)
+	{
+		for (HTrigger* t : m_owner->GetActiveTriggers())
+		{
+			if (t->GetAction() == this)
+			{
+				t->DiscardTrigger();
+			}
+		}
+	}
+}

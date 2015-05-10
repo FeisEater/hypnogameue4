@@ -142,6 +142,8 @@ public:
 
 	bool IsHypnotizing();
 
+	AAICharacter* HasConversationWith();
+
 protected:
 
 	/** Called for forwards/backward input */
