@@ -21,7 +21,7 @@ public:
 	HAction(AAICharacter* owner, bool overrideAttack) : m_owner(owner), m_overrideAttackState(overrideAttack), m_workWhileHypnotized(false) {}
 
 	void Execute();
-	virtual FString GetMenuName() = 0;
+	virtual FString GetMenuName();
 	virtual HAction* CreateAction() = 0;
 	virtual void CollectParameters();
 	virtual void SetActorParameter(AActor* actor);

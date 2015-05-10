@@ -75,6 +75,7 @@ public:
 	{
 		return triggers;
 	}
+	void RemoveActiveTrigger(HTrigger* trigger);
 	void PrepareTriggerViaIndex(int32 index);
 	void AttachPendingTrigger();
 	HTrigger* GetPendingTrigger()
@@ -122,4 +123,5 @@ private:
 	TArray<HAction*> m_availableActions;
 	HAction* m_pendingAction;
 	int32 m_health;
+	TArray<HTrigger*> m_triggersToRemove;
 };

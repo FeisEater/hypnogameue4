@@ -15,27 +15,32 @@ void HAction::Execute()
 
 void HAction::CollectParameters()
 {
-	m_owner->AttachPendingTrigger();
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+	plr->StartHypnotizing();
 }
 
 void HAction::SetActorParameter(AActor* actor)
 {
-	m_owner->AttachPendingTrigger();
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+	plr->StartHypnotizing();
 }
 
 void HAction::SetVectorParameter(TSharedPtr<FVector> vector)
 {
-	m_owner->AttachPendingTrigger();
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+	plr->StartHypnotizing();
 }
 
 void HAction::SetStringParameter(FString string)
 {
-	m_owner->AttachPendingTrigger();
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+	plr->StartHypnotizing();
 }
 
 void HAction::SetSoundParameter(USound* sound)
 {
-	m_owner->AttachPendingTrigger();
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+	plr->StartHypnotizing();
 }
 
 void HAction::Consume()
@@ -49,7 +54,13 @@ void HAction::Consume()
 			if (t->GetAction() == this)
 			{
 				t->DiscardTrigger();
+				return;
 			}
 		}
 	}
+}
+
+FString HAction::GetMenuName()
+{
+	return "(" + FString::FromInt(m_actionCount) + ")";
 }

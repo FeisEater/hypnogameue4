@@ -6,5 +6,9 @@
 
 void HActionForgetEnemy::RunAction()
 {
-	m_owner->StopAttack(true);
+	if (m_owner->GetEnemy() != NULL)
+	{
+		m_owner->StopAttack(true);
+		Consume();
+	}
 }

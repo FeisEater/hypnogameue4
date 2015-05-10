@@ -13,7 +13,7 @@ public:
 	{
 		m_actionCount = 1;
 	}
-	FString GetMenuName() override { return "Attack..."; }
+	FString GetMenuName() override { return "Attack..." + HAction::GetMenuName(); }
 	HAction* CreateAction() override { return new HActionAttack(m_owner, m_target, m_overrideAttackState); }
 	void CollectParameters() override;
 	void SetActorParameter(AActor* actor) override;

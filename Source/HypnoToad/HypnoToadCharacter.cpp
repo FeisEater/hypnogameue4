@@ -52,6 +52,8 @@ AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitial
 
 	m_InGuiMode = false;
 	InRestrictedArea = false;
+	m_creatingTrigger = false;
+	m_hypnoseDelay = 3;
 
 	//WidgetInstance = CreateWidget(this, WidgetTemplate);
 	//WidgetInstance->AddToViewport();
@@ -82,6 +84,16 @@ bool HitBrush(FHitResult &Hit)
 void AHypnoToadCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (m_creatingTrigger)
+	{
+		m_hypnoseDelay -= DeltaTime;
+		if (m_conversationWith && m_hypnoseDelay <= 0)
+		{
+			m_conversationWith->AttachPendingTrigger();
+			EndHypnotization();
+		}
+	}
 
 	APlayerController* plr = (APlayerController*)GetController();
 	if (plr->WasInputKeyJustPressed(EKeys::F))
@@ -474,4 +486,22 @@ void AHypnoToadCharacter::PassTriggersParameter()
 	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger() == NULL || m_conversationWith->GetPendingAction() == NULL)
 		return;
 	m_conversationWith->GetPendingAction()->SetActorParameter(m_conversationWith->GetPendingTrigger()->ProvidedParameter());
+}
+
+void AHypnoToadCharacter::StartHypnotizing()
+{
+	m_creatingTrigger = true;
+	m_hypnoseDelay = 3;
+	ShowHypnotizationProgress();
+}
+
+void AHypnoToadCharacter::EndHypnotization()
+{
+	m_creatingTrigger = false;
+	m_hypnoseDelay = 3;
+}
+
+float AHypnoToadCharacter::HypnotizationDelayStatus()
+{
+	return 1.0f - m_hypnoseDelay / 3.0f;
 }

@@ -48,14 +48,14 @@ void AAICharacter::BeginPlay()
 
 	HTrigger* t = new HTriggerSawHypnotizedNpc(this);
 	HTriggerSawHypnotizedNpc* sawHypnotizedNpc = (HTriggerSawHypnotizedNpc*)t;
-	t->SetAction(new HActionDetour(this, sawHypnotizedNpc->GetHypnotizedNpcLocation()));
+	t->SetIndefinateAction(new HActionDetour(this, sawHypnotizedNpc->GetHypnotizedNpcLocation()));
 	HTrigger* t2 = new HTriggerSawPlayerHypnotizing(this);
-	t2->SetAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
+	t2->SetIndefinateAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
 	HTrigger* t3 = new HTriggerHeard(this, NewObject<UGunShot>());
 	HTriggerHeard* heard = (HTriggerHeard*)t3;
-	t3->SetAction(new HActionDetour(this, heard->GetSoundSource()));
+	t3->SetIndefinateAction(new HActionDetour(this, heard->GetSoundSource()));
 	HTrigger* t4 = new HTriggerSawPlayerInRestricted(this);
-	t4->SetAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
+	t4->SetIndefinateAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
 	triggers.Add(t);
 	triggers.Add(t2);
 	triggers.Add(t3);
@@ -70,7 +70,7 @@ void AAICharacter::BeginPlay()
 	m_availableActions.Add(new HActionDetour(this, NULL));
 	m_availableActions.Add(new HActionFreeze(this));
 	m_availableActions.Add(new HActionSay(this, NULL));
-	m_availableActions.Add(new HActionForgetEnemy(this, true));
+	m_availableActions.Add(new HActionForgetEnemy(this, 5, true));
 
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 
@@ -98,6 +98,8 @@ void AAICharacter::Tick( float DeltaTime )
 	{
 		t->Trigger();
 	}
+	for (HTrigger* t : m_triggersToRemove)
+		triggers.Remove(t);
 
 	for (USound* s : m_heardSounds)
 	{
@@ -364,6 +366,8 @@ void AAICharacter::EndConversation()
 	m_havingConversation = false;
 	m_pendingAction = NULL;
 	m_pendingTrigger = NULL;
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)GetWorld()->GetFirstPlayerController()->GetCharacter();
+	plr->EndHypnotization();
 }
 
 void AAICharacter::Hypnotize(AHypnoToadCharacter* plr)
@@ -405,6 +409,11 @@ USound* AAICharacter::HeardSound(USound* sound)
 			return snd;
 	}
 	return NULL;
+}
+
+void AAICharacter::RemoveActiveTrigger(HTrigger* trigger)
+{
+	m_triggersToRemove.Add(trigger);
 }
 
 void AAICharacter::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

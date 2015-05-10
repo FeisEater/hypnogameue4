@@ -9,9 +9,12 @@
 class HYPNOTOAD_API HActionForgetEnemy : public HAction
 {
 public:
-	HActionForgetEnemy(AAICharacter* owner, bool overrideAttack = false) : HAction(owner, overrideAttack) {}
-	FString GetMenuName() override { return "Forget enemy"; }
-	HAction* CreateAction() override { return new HActionForgetEnemy(m_owner, m_overrideAttackState); }
+	HActionForgetEnemy(AAICharacter* owner, float actionCount = 5, bool overrideAttack = false) : HAction(owner, overrideAttack)
+	{
+		m_actionCount = actionCount;
+	}
+	FString GetMenuName() override { return "Forget enemy" + HAction::GetMenuName(); }
+	HAction* CreateAction() override { return new HActionForgetEnemy(m_owner, m_actionCount, m_overrideAttackState); }
 
 protected:
 	virtual void RunAction() override;

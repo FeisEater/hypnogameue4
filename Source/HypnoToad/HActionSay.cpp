@@ -7,8 +7,13 @@
 
 void HActionSay::RunAction()
 {
-	m_sound->Origin = m_owner->GetActorLocation();
-	USound::BroadCastSound(m_owner->GetWorld(), m_sound);
+	if (m_owner->GetWorldTimerManager().GetTimerRemaining(m_timer) <= 0)
+	{
+		m_sound->Origin = m_owner->GetActorLocation();
+		USound::BroadCastSound(m_owner->GetWorld(), m_sound);
+		m_owner->GetWorldTimerManager().SetTimer(m_timer, 1, false);
+		Consume();
+	}
 }
 
 void HActionSay::CollectParameters()
@@ -35,5 +40,5 @@ FString HActionSay::GetMenuName()
 	{
 		soundName = "'" + ((UWord*)m_sound)->Content + "'";
 	}
-	return "Say " + soundName;
+	return "Say " + soundName + HAction::GetMenuName();
 }

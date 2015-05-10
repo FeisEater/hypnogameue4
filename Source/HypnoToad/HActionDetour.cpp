@@ -14,21 +14,28 @@ void HActionDetour::RunAction()
 	float dist = UNavigationSystem::FindPathToLocationSynchronously(m_owner->GetWorld(), m_owner->GetActorLocation(), *m_targetPosition)->GetPathLength();
 	if (m_maxDistance > 0 && dist > m_maxDistance)
 		return;
-	if (m_detourPoint)
-		m_detourPoint->Destroy();
-	m_detourPoint = m_owner->GetWorld()->SpawnActor<APathPoint>(*m_targetPosition, FRotator::ZeroRotator);
-	APathPoint* NextNonOverridablePPoint = m_owner->GetNextPPoint();
-	for (int i = 0; i < 1000; ++i)
+	if (m_detourPoint && m_detourPoint->GotVisited())
 	{
-		if (!NextNonOverridablePPoint || !NextNonOverridablePPoint->Overridable)
-			break;
-		NextNonOverridablePPoint = (APathPoint*)NextNonOverridablePPoint->NextPPoint;
-		if (i == 999)
-			UE_LOG(LogTemp, Warning, TEXT("Seems like all ppoints are overridable, which shouldn't happen"));
+		m_detourPoint->Destroy();
+		m_detourPoint = NULL;
 	}
-	m_detourPoint->NextPPoint = NextNonOverridablePPoint;
-	m_detourPoint->Overridable = true;
-	m_owner->SetNextPPoint(m_detourPoint);
+	if (!m_detourPoint)
+	{
+		m_detourPoint = m_owner->GetWorld()->SpawnActor<APathPoint>(*m_targetPosition, FRotator::ZeroRotator);
+		APathPoint* NextNonOverridablePPoint = m_owner->GetNextPPoint();
+		for (int i = 0; i < 1000; ++i)
+		{
+			if (!NextNonOverridablePPoint || !NextNonOverridablePPoint->Overridable)
+				break;
+			NextNonOverridablePPoint = (APathPoint*)NextNonOverridablePPoint->NextPPoint;
+			if (i == 999)
+				UE_LOG(LogTemp, Warning, TEXT("Seems like all ppoints are overridable, which shouldn't happen"));
+		}
+		m_detourPoint->NextPPoint = NextNonOverridablePPoint;
+		m_detourPoint->Overridable = true;
+		m_owner->SetNextPPoint(m_detourPoint);
+		Consume();
+	}
 }
 
 void HActionDetour::CollectParameters()

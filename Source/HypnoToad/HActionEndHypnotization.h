@@ -9,12 +9,13 @@
 class HYPNOTOAD_API HActionEndHypnotization : public HAction
 {
 public:
-	HActionEndHypnotization(AAICharacter* owner, bool overrideAttack = true) : HAction(owner, overrideAttack)
+	HActionEndHypnotization(AAICharacter* owner, float actionCount = 5, bool overrideAttack = true) : HAction(owner, overrideAttack)
 	{
 		m_workWhileHypnotized = true;
+		m_actionCount = actionCount;
 	}
-	FString GetMenuName() override { return "End hypnotization"; }
-	HAction* CreateAction() override { return new HActionEndHypnotization(m_owner, m_overrideAttackState); }
+	FString GetMenuName() override { return "End hypnotization" + HAction::GetMenuName(); }
+	HAction* CreateAction() override { return new HActionEndHypnotization(m_owner, m_actionCount, m_overrideAttackState); }
 
 protected:
 	virtual void RunAction() override;

@@ -134,8 +134,18 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowSoundNotifier(USound* sound);
 
+	/** Show hypnotization progress */
+	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
+	void ShowHypnotizationProgress();
+
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void SayWord(FString word);
+
+	void StartHypnotizing();
+	void EndHypnotization();
+
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	float HypnotizationDelayStatus();
 
 	UPROPERTY(BlueprintReadWrite, Category = "HypnoToad")
 	bool InRestrictedArea;
@@ -189,5 +199,7 @@ private:
 	AAICharacter* m_hypnotized;
 	UClass* PathPointMarkerClass;
 	bool m_InGuiMode;
+	float m_hypnoseDelay;
+	bool m_creatingTrigger;
 };
 

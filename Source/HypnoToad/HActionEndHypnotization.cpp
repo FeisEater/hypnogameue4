@@ -6,6 +6,9 @@
 
 void HActionEndHypnotization::RunAction()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("im awake"));
-	m_owner->EndHypnotization();
+	if (m_owner->IsHypnotized())
+	{
+		m_owner->EndHypnotization();
+		Consume();
+	}
 }
