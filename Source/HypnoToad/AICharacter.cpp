@@ -19,6 +19,7 @@
 #include "HActionEndHypnotization.h"
 #include "HTriggerSawPlayerInRestricted.h"
 #include "HActionForgetEnemy.h"
+#include "HTriggerNear.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -63,6 +64,7 @@ void AAICharacter::BeginPlay()
 
 	m_availableTriggers.Add(new HTriggerSaw(this, NULL));
 	m_availableTriggers.Add(new HTriggerHeard(this, NULL));
+	m_availableTriggers.Add(new HTriggerNear(this, NULL));
 
 	m_availableActions.Add(new HActionIgnore(this));
 	m_availableActions.Add(new HActionEndHypnotization(this));
@@ -195,9 +197,15 @@ void AAICharacter::Tick( float DeltaTime )
 	}
 	else if (m_hypnotizedBy && m_followsHypnotizer)
 	{
-		UNavigationSystem::SimpleMoveToActor(Controller, m_hypnotizedBy);
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-		DesiredRotation = GetActorRotation();
+		float pathDist = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), m_hypnotizedBy)->GetPathLength();
+		if (pathDist < 1000)
+		{
+			UNavigationSystem::SimpleMoveToActor(Controller, m_hypnotizedBy);
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			DesiredRotation = GetActorRotation();
+		}
+		else
+			StayStillWhileHypnotized();
 	}
 
 	GetCharacterMovement()->MaxWalkSpeed = m_attacking ? 500 : 200;

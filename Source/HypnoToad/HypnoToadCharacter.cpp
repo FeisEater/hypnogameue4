@@ -157,6 +157,7 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 				decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 				decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 				decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+				DrawDebugBox(GetWorld(), decal->GetRootComponent()->GetComponentLocation(), FVector(100, 100, 100), FColor::Red, true);
 			}
 		}
 	}

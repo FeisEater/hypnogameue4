@@ -11,7 +11,7 @@ void HActionAttack::RunAction()
 		for (int i = 0; i < 3; ++i)
 			m_owner->Hurt(m_owner);
 	}
-	if (m_owner->GetEnemy() != m_target)
+	if (m_owner->GetEnemy() != m_target && m_owner->Armed)
 	{
 		m_owner->Attack(m_target);
 		Consume();
