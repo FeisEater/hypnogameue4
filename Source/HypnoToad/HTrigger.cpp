@@ -35,5 +35,5 @@ void HTrigger::DiscardTrigger()
 		m_action = m_defaultAction;
 		return;
 	}
-	m_owner->GetActiveTriggers().Remove(this);
+	m_owner->RemoveActiveTrigger(this);
 }

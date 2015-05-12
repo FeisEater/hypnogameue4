@@ -46,6 +46,7 @@ void AAICharacter::BeginPlay()
 	m_attacking = false;
 	Discovered = false;
 	m_health = 3;
+	MaxTriggers = 7;
 
 	HTrigger* t = new HTriggerSawHypnotizedNpc(this);
 	HTriggerSawHypnotizedNpc* sawHypnotizedNpc = (HTriggerSawHypnotizedNpc*)t;
@@ -66,13 +67,18 @@ void AAICharacter::BeginPlay()
 	m_availableTriggers.Add(new HTriggerHeard(this, NULL));
 	m_availableTriggers.Add(new HTriggerNear(this, NULL));
 
-	m_availableActions.Add(new HActionIgnore(this));
-	m_availableActions.Add(new HActionEndHypnotization(this));
-	m_availableActions.Add(new HActionAttack(this, NULL));
-	m_availableActions.Add(new HActionDetour(this, NULL));
-	m_availableActions.Add(new HActionFreeze(this));
-	m_availableActions.Add(new HActionSay(this, NULL));
-	m_availableActions.Add(new HActionForgetEnemy(this, 5, true));
+	m_availableLightActions.Add(new HActionIgnore(this));
+	m_availableLightActions.Add(new HActionDetour(this, NULL, 1000));
+	m_availableLightActions.Add(new HActionFreeze(this));
+	m_availableLightActions.Add(new HActionSay(this, NULL));
+
+	m_availableHeavyActions.Add(new HActionIgnore(this));
+	m_availableHeavyActions.Add(new HActionEndHypnotization(this));
+	m_availableHeavyActions.Add(new HActionAttack(this, NULL));
+	m_availableHeavyActions.Add(new HActionDetour(this, NULL));
+	m_availableHeavyActions.Add(new HActionFreeze(this));
+	m_availableHeavyActions.Add(new HActionSay(this, NULL));
+	m_availableHeavyActions.Add(new HActionForgetEnemy(this, 5, true));
 
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 
@@ -250,12 +256,17 @@ void AAICharacter::Shoot()
 		DrawDebugLine(GetWorld(), Start, Hit.ImpactPoint, FColor::Red, false, 0.25f, -1, 2);
 		if (!Hit.Component.Get()->IsA(UModelComponent::StaticClass()))
 		{
-			//if (Hit.Actor->IsA(AAICharacter::StaticClass()))
-			//	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Friendly fire"));
-			if (Hit.Actor->IsA(AAICharacter::StaticClass()))// || Hit.Actor->IsA(AHypnoToadCharacter::StaticClass()))
+			if (Hit.Actor->IsA(AAICharacter::StaticClass()))
 			{
 				AAICharacter* ai = (AAICharacter*)(Hit.Actor.Get());
 				Hurt(ai);
+			}
+			if (Hit.Actor->IsA(AHypnoToadCharacter::StaticClass()))
+			{
+				AHypnoToadCharacter* plr = (AHypnoToadCharacter*)(Hit.Actor.Get());
+				plr->LoseHealth();
+				if (plr->IsDead())
+					StopAttack(true);
 			}
 		}
 	}
@@ -315,6 +326,9 @@ void AAICharacter::Attack(AActor* actor)
 	m_timeToCare = 0;
 	m_scanPosition = 0;
 	EndConversation();
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)GetWorld()->GetFirstPlayerController()->GetCharacter();
+	if (plr->HasConversationWith() == this)
+		plr->EndConversation();
 }
 
 void AAICharacter::StopAttack(bool forgetEnemy)
@@ -374,20 +388,23 @@ void AAICharacter::EndConversation()
 	m_havingConversation = false;
 	m_pendingAction = NULL;
 	m_pendingTrigger = NULL;
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)GetWorld()->GetFirstPlayerController()->GetCharacter();
-	plr->EndHypnotization();
 }
 
 void AAICharacter::Hypnotize(AHypnoToadCharacter* plr)
 {
 	m_hypnotizedBy = plr;
 	m_followsHypnotizer = true;
+	if (plr->HasConversationWith() == this)
+		plr->EndConversation();
 }
 
 void AAICharacter::EndHypnotization()
 {
 	m_hypnotizedBy = NULL;
 	m_followsHypnotizer = false;
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)GetWorld()->GetFirstPlayerController()->GetCharacter();
+	if (plr->HasConversationWith() == this)
+		plr->EndConversation();
 }
 
 void AAICharacter::StayStillWhileHypnotized()
@@ -458,6 +475,13 @@ void AAICharacter::AttachPendingTrigger()
 
 void AAICharacter::PrepareActionViaIndex(int32 index)
 {
-	m_pendingAction = m_availableActions[index]->CreateAction();
+	m_pendingAction = GetActions()[index]->CreateAction();
 	m_pendingAction->CollectParameters();
+}
+
+TArray<HAction*> AAICharacter::GetActions()
+{
+	if (IsHypnotized())
+		return m_availableHeavyActions;
+	return m_availableLightActions;
 }

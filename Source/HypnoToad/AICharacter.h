@@ -67,10 +67,7 @@ public:
 	{
 		return m_availableTriggers;
 	}
-	TArray<HAction*> GetActions()
-	{
-		return m_availableActions;
-	}
+	TArray<HAction*> GetActions();
 	TArray<HTrigger*>& GetActiveTriggers()
 	{
 		return triggers;
@@ -92,6 +89,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "AI")
 	bool Discovered;
+
+	UPROPERTY(BlueprintReadOnly, Category = "AI")
+	int32 MaxTriggers;
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 	bool Armed;
@@ -120,7 +120,8 @@ private:
 	TArray<USound*> m_heardSounds;
 	TArray<HTrigger*> m_availableTriggers;
 	HTrigger* m_pendingTrigger;
-	TArray<HAction*> m_availableActions;
+	TArray<HAction*> m_availableLightActions;
+	TArray<HAction*> m_availableHeavyActions;
 	HAction* m_pendingAction;
 	int32 m_health;
 	TArray<HTrigger*> m_triggersToRemove;

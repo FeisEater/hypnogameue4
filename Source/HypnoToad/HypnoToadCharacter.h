@@ -153,6 +153,24 @@ public:
 	bool IsHypnotizing();
 
 	AAICharacter* HasConversationWith();
+	void EndConversation();
+
+	void LoseHealth();
+
+	/** Show game over screen */
+	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
+	void ShowGameOverScreen();
+
+	bool IsDead()
+	{
+		return m_health <= 0;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	int32 GetHealth();
+
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	bool NpcHasRoomForTriggers();
 
 protected:
 
@@ -201,5 +219,6 @@ private:
 	bool m_InGuiMode;
 	float m_hypnoseDelay;
 	bool m_creatingTrigger;
+	int32 m_health;
 };
 

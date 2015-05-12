@@ -54,6 +54,7 @@ AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitial
 	InRestrictedArea = false;
 	m_creatingTrigger = false;
 	m_hypnoseDelay = 3;
+	m_health = 5;
 
 	//WidgetInstance = CreateWidget(this, WidgetTemplate);
 	//WidgetInstance->AddToViewport();
@@ -85,6 +86,9 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (IsDead())
+		return;
+
 	if (m_creatingTrigger)
 	{
 		m_hypnoseDelay -= DeltaTime;
@@ -101,9 +105,7 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		if (m_conversationWith)
 		{
 			m_conversationWith->EndConversation();
-			m_conversationWith = NULL;
-
-			SetGUIMode(false);
+			EndConversation();
 		}
 		else
 		{
@@ -157,7 +159,6 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 				decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 				decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 				decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-				DrawDebugBox(GetWorld(), decal->GetRootComponent()->GetComponentLocation(), FVector(100, 100, 100), FColor::Red, true);
 			}
 		}
 	}
@@ -227,6 +228,13 @@ AAICharacter* AHypnoToadCharacter::InterractsWithNPC(float range)
 	return ai;
 }
 
+void AHypnoToadCharacter::EndConversation()
+{
+	m_conversationWith = NULL;
+	SetGUIMode(false);
+	EndHypnotization();
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -256,6 +264,8 @@ void AHypnoToadCharacter::SetupPlayerInputComponent(class UInputComponent* Input
 
 void AHypnoToadCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
+	if (IsDead())
+		return;
 	// jump, but only on the first touch
 	if (FingerIndex == ETouchIndex::Touch1)
 	{
@@ -285,6 +295,9 @@ void AHypnoToadCharacter::LookUpAtRate(float Rate)
 
 void AHypnoToadCharacter::MoveForward(float Value)
 {
+	if (IsDead())
+		return;
+
 	if ((Controller != NULL) && (Value != 0.0f) && !m_conversationWith)
 	{
 		// find out which way is forward
@@ -299,6 +312,9 @@ void AHypnoToadCharacter::MoveForward(float Value)
 
 void AHypnoToadCharacter::MoveRight(float Value)
 {
+	if (IsDead())
+		return;
+
 	if ((Controller != NULL) && (Value != 0.0f) && !m_conversationWith)
 	{
 		// find out which way is right
@@ -320,6 +336,13 @@ bool AHypnoToadCharacter::IsHypnotizing()
 AAICharacter* AHypnoToadCharacter::HasConversationWith()
 {
 	return m_conversationWith;
+}
+
+bool AHypnoToadCharacter::NpcHasRoomForTriggers()
+{
+	if (m_conversationWith == NULL)
+		return false;
+	return m_conversationWith->GetActiveTriggers().Num() <= m_conversationWith->MaxTriggers;
 }
 
 TArray<FString> AHypnoToadCharacter::GetNpcTriggerNames()
@@ -505,4 +528,24 @@ void AHypnoToadCharacter::EndHypnotization()
 float AHypnoToadCharacter::HypnotizationDelayStatus()
 {
 	return 1.0f - m_hypnoseDelay / 3.0f;
+}
+
+void AHypnoToadCharacter::LoseHealth()
+{
+	--m_health;
+	if (IsDead())
+	{
+		USkeletalMeshComponent* mesh = (USkeletalMeshComponent*)GetComponentByClass(USkeletalMeshComponent::StaticClass());
+		if (mesh)
+		{
+			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			mesh->SetSimulatePhysics(true);
+		}
+		ShowGameOverScreen();
+	}
+}
+
+int32 AHypnoToadCharacter::GetHealth()
+{
+	return m_health;
 }
