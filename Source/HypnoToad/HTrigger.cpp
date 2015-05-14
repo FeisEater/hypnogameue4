@@ -32,6 +32,7 @@ void HTrigger::DiscardTrigger()
 {
 	if (m_defaultAction != NULL)
 	{
+		//if (m_action != NULL)	delete m_action;
 		m_action = m_defaultAction;
 		return;
 	}

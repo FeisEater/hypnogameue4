@@ -15,7 +15,14 @@ class HYPNOTOAD_API HTrigger
 public:
 	HTrigger(AAICharacter* owner) : m_owner(owner)
 	{
+		m_action = NULL;
 		m_defaultAction = NULL;
+	}
+	virtual ~HTrigger()
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Destroying trigger"));
+		//if (m_action != NULL)	delete m_action;
+		//if (m_defaultAction != NULL)	delete m_defaultAction;
 	}
 
 	void Trigger();
@@ -24,9 +31,23 @@ public:
 	{
 		return m_action;
 	}
-	void SetAction(HAction* action) { m_action = action; }
+	HAction* GetDefaultAction()
+	{
+		return m_defaultAction;
+	}
+
+	void SetAction(HAction* action)
+	{
+		//if (m_action != NULL)
+		//	delete m_action;
+		m_action = action;
+	}
 	void SetIndefinateAction(HAction* action)
 	{
+		//if (m_action != NULL)
+		//	delete m_action;
+		//if (m_defaultAction != NULL)
+		//	delete m_defaultAction;
 		m_defaultAction = action;
 		m_action = action;
 	}

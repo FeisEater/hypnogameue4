@@ -17,11 +17,13 @@ class HYPNOTOAD_API AAICharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AAICharacter();
-	~AAICharacter();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
+
+	// Called when the game ends
+	//virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
@@ -34,10 +36,19 @@ public:
 	bool CanSee(AActor* actor);
 	void Attack(AActor* actor);
 	bool IsAttacking();
-	AActor* GetEnemy()
-	{
-		return m_currentEnemy;
-	}
+	
+	UFUNCTION(BlueprintCallable, Category = AI)
+	bool HasEnemy();
+
+	UFUNCTION(BlueprintCallable, Category = AI)
+	AActor* GetEnemy();
+
+	UFUNCTION(BlueprintCallable, Category = AI)
+	bool IsInfluenced();
+
+	UFUNCTION(BlueprintCallable, Category = AI)
+	bool IsMaxedInfluenced();
+
 	void StopAttack(bool forgetEnemy);
 	void Shoot();
 	void Hurt(AAICharacter* victim);
@@ -49,7 +60,7 @@ public:
 	void ActivateConversation(AHypnoToadCharacter* plr);
 	void EndConversation();
 
-	void Hypnotize(AHypnoToadCharacter* plr);
+	void Hypnotize(AHypnoToadCharacter* plr, bool followPlayer);
 	void EndHypnotization();
 
 	UFUNCTION(BlueprintCallable, Category = AI)
@@ -96,10 +107,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	bool Armed;
 
-	bool IsDead()
-	{
-		return m_health <= 0;
-	}
+	UFUNCTION(BlueprintCallable, Category = AI)
+	bool IsDead();
 
 	UFUNCTION()
 	void OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

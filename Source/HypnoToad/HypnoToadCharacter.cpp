@@ -125,7 +125,7 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		if (ai && !m_hypnotized && !ai->IsAttacking())
 		{
 			m_hypnotized = ai;
-			ai->Hypnotize(this);
+			ai->Hypnotize(this, true);
 			GetCharacterMovement()->MaxWalkSpeed = 200;
 		}
 		else if (m_hypnotized)
@@ -153,7 +153,9 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 			{
 				FRotator rot = (-Hit.ImpactNormal).Rotation();
 				rot.Roll = 90;
-				ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.ImpactPoint + Hit.ImpactNormal * 20, rot);
+				FActorSpawnParameters param;
+				//param.Name = something
+				ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.ImpactPoint + Hit.ImpactNormal * 20, rot, param);
 				decal->GetDecal()->SetDecalMaterial(StickerMaterial);
 				decal->SetActorScale3D(FVector(30, 30, 30));
 				decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -176,7 +178,9 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 		{
 			FVector* loc = new FVector(Hit.ImpactPoint);
 			FRotator* rot = new FRotator(GetActorRotation());
-			GetWorld()->SpawnActor(PathPointMarkerClass, loc, rot);
+			FActorSpawnParameters param;
+			//param.Name = ...
+			GetWorld()->SpawnActor(PathPointMarkerClass, loc, rot, param);
 		}
 	}
 
@@ -342,7 +346,7 @@ bool AHypnoToadCharacter::NpcHasRoomForTriggers()
 {
 	if (m_conversationWith == NULL)
 		return false;
-	return m_conversationWith->GetActiveTriggers().Num() <= m_conversationWith->MaxTriggers;
+	return m_conversationWith->GetActiveTriggers().Num() < m_conversationWith->MaxTriggers;
 }
 
 TArray<FString> AHypnoToadCharacter::GetNpcTriggerNames()

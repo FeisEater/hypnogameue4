@@ -19,6 +19,7 @@ class HYPNOTOAD_API HAction
 {
 public:
 	HAction(AAICharacter* owner, bool overrideAttack) : m_owner(owner), m_overrideAttackState(overrideAttack), m_workWhileHypnotized(false) {}
+	virtual ~HAction() {}
 
 	void Execute();
 	virtual FString GetMenuName();

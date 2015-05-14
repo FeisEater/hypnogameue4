@@ -15,6 +15,13 @@ public:
 			m_sound->AddToRoot();
 		m_actionCount = actionCount;
 	}
+	~HActionSay()
+	{
+		if (m_sound && m_sound->IsValidLowLevel())
+			m_sound->ConditionalBeginDestroy();
+		UE_LOG(LogTemp, Warning, TEXT("Destroying action say"));
+	}
+
 	FString GetMenuName() override;
 	HAction* CreateAction() override { return new HActionSay(m_owner, m_sound, m_actionCount, m_overrideAttackState); }
 	void CollectParameters() override;

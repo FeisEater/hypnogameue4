@@ -20,18 +20,14 @@
 #include "HTriggerSawPlayerInRestricted.h"
 #include "HActionForgetEnemy.h"
 #include "HTriggerNear.h"
+#include "HActionShoot.h"
+#include "HActionSleep.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-}
-
-AAICharacter::~AAICharacter()
-{
-	for (HTrigger* t : triggers)
-		delete t;
 }
 
 // Called when the game starts or when spawned
@@ -46,16 +42,14 @@ void AAICharacter::BeginPlay()
 	m_attacking = false;
 	Discovered = false;
 	m_health = 3;
-	MaxTriggers = 7;
+	MaxTriggers = 8;
 
-	HTrigger* t = new HTriggerSawHypnotizedNpc(this);
-	HTriggerSawHypnotizedNpc* sawHypnotizedNpc = (HTriggerSawHypnotizedNpc*)t;
-	t->SetIndefinateAction(new HActionDetour(this, sawHypnotizedNpc->GetHypnotizedNpcLocation()));
+	HTriggerSawHypnotizedNpc* t = new HTriggerSawHypnotizedNpc(this);
+	t->SetIndefinateAction(new HActionDetour(this, t->GetHypnotizedNpcLocation()));
 	HTrigger* t2 = new HTriggerSawPlayerHypnotizing(this);
 	t2->SetIndefinateAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
-	HTrigger* t3 = new HTriggerHeard(this, NewObject<UGunShot>());
-	HTriggerHeard* heard = (HTriggerHeard*)t3;
-	t3->SetIndefinateAction(new HActionDetour(this, heard->GetSoundSource()));
+	HTriggerHeard* t3 = new HTriggerHeard(this, NewObject<UGunShot>());
+	t3->SetIndefinateAction(new HActionDetour(this, t3->GetSoundSource()));
 	HTrigger* t4 = new HTriggerSawPlayerInRestricted(this);
 	t4->SetIndefinateAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
 	triggers.Add(t);
@@ -71,6 +65,8 @@ void AAICharacter::BeginPlay()
 	m_availableLightActions.Add(new HActionDetour(this, NULL, 1000));
 	m_availableLightActions.Add(new HActionFreeze(this));
 	m_availableLightActions.Add(new HActionSay(this, NULL));
+	m_availableLightActions.Add(new HActionShoot(this));
+	m_availableLightActions.Add(new HActionSleep(this, NULL));
 
 	m_availableHeavyActions.Add(new HActionIgnore(this));
 	m_availableHeavyActions.Add(new HActionEndHypnotization(this));
@@ -79,6 +75,8 @@ void AAICharacter::BeginPlay()
 	m_availableHeavyActions.Add(new HActionFreeze(this));
 	m_availableHeavyActions.Add(new HActionSay(this, NULL));
 	m_availableHeavyActions.Add(new HActionForgetEnemy(this, 5, true));
+	m_availableHeavyActions.Add(new HActionShoot(this));
+	m_availableHeavyActions.Add(new HActionSleep(this, NULL));
 
 	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
 
@@ -95,6 +93,22 @@ void AAICharacter::BeginPlay()
 	}
 }
 
+/*
+void AAICharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	for (HTrigger* t : triggers)
+		if (t != NULL)	delete t;
+	for (HTrigger* t : m_availableTriggers)
+		if (t != NULL)	delete t;
+	for (HTrigger* t : m_triggersToRemove)
+		if (t != NULL)	delete t;
+	for (HAction* a : m_availableLightActions)
+		if (a != NULL)	delete a;
+	for (HAction* a : m_availableHeavyActions)
+		if (a != NULL)	delete a;
+}
+*/
+
 // Called every frame
 void AAICharacter::Tick( float DeltaTime )
 {
@@ -107,7 +121,11 @@ void AAICharacter::Tick( float DeltaTime )
 		t->Trigger();
 	}
 	for (HTrigger* t : m_triggersToRemove)
+	{
 		triggers.Remove(t);
+		//if (t != NULL)	delete t;
+	}
+	m_triggersToRemove.Empty();
 
 	for (USound* s : m_heardSounds)
 	{
@@ -221,7 +239,7 @@ void AAICharacter::Shoot()
 {
 	m_scanPosition = 0;
 	FVector Dir;
-	if (m_currentEnemy)
+	if (m_currentEnemy && m_attacking)
 	{
 		Dir = (m_currentEnemy->GetActorLocation() - GetActorLocation());
 		Dir.Normalize();
@@ -386,14 +404,18 @@ void AAICharacter::ActivateConversation(AHypnoToadCharacter* plr)
 void AAICharacter::EndConversation()
 {
 	m_havingConversation = false;
+	//if (m_pendingAction != NULL)	delete m_pendingAction;
 	m_pendingAction = NULL;
+	//if (!triggers.Contains(m_pendingTrigger) && m_pendingTrigger != NULL)
+	//	delete m_pendingTrigger;
 	m_pendingTrigger = NULL;
 }
 
-void AAICharacter::Hypnotize(AHypnoToadCharacter* plr)
+void AAICharacter::Hypnotize(AHypnoToadCharacter* plr, bool followPlayer)
 {
 	m_hypnotizedBy = plr;
-	m_followsHypnotizer = true;
+	if (followPlayer)
+		m_followsHypnotizer = true;
 	if (plr->HasConversationWith() == this)
 		plr->EndConversation();
 }
@@ -484,4 +506,33 @@ TArray<HAction*> AAICharacter::GetActions()
 	if (IsHypnotized())
 		return m_availableHeavyActions;
 	return m_availableLightActions;
+}
+
+bool AAICharacter::IsDead()
+{
+	return m_health <= 0;
+}
+
+bool AAICharacter::HasEnemy()
+{
+	return m_currentEnemy != NULL;
+}
+
+AActor* AAICharacter::GetEnemy()
+{
+	return m_currentEnemy;
+}
+
+bool AAICharacter::IsInfluenced()
+{
+	if (triggers.Num() > 4)
+		return true;
+	for (HTrigger* t : triggers)
+		if (t->GetAction() != t->GetDefaultAction())	return true;
+	return false;
+}
+
+bool AAICharacter::IsMaxedInfluenced()
+{
+	return triggers.Num() >= MaxTriggers;
 }

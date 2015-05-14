@@ -10,6 +10,10 @@ class HYPNOTOAD_API HTriggerSawPlayerHypnotizing : public HTrigger
 {
 public:
 	HTriggerSawPlayerHypnotizing(AAICharacter* owner) : HTrigger(owner) {}
+	~HTriggerSawPlayerHypnotizing()
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Destroying trigger saw player hypnotizing"));
+	}
 
 	FString GetMenuName() override
 	{

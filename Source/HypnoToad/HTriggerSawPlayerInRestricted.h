@@ -10,6 +10,10 @@ class HYPNOTOAD_API HTriggerSawPlayerInRestricted : public HTrigger
 {
 public:
 	HTriggerSawPlayerInRestricted(AAICharacter* owner) : HTrigger(owner) {}
+	~HTriggerSawPlayerInRestricted()
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Destroying trigger saw player in restricted area"));
+	}
 
 	FString GetMenuName() override
 	{

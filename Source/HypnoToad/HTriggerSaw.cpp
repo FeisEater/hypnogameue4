@@ -20,7 +20,9 @@ void HTriggerSaw::CollectParameters()
 {
 	APlayerController* plrController = *(m_owner->GetWorld()->GetPlayerControllerIterator());
 	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
-	plr->ShowActorParameterGui(plr->GetStickers());
+	TArray<AActor*> actorsToSee = plr->GetStickers();
+	actorsToSee += plr->GetNpcAttackTargets();
+	plr->ShowActorParameterGui(actorsToSee);
 }
 
 void HTriggerSaw::SetActorParameter(AActor* actor)

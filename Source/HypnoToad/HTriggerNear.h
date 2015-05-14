@@ -9,7 +9,11 @@
 class HYPNOTOAD_API HTriggerNear : public HTrigger
 {
 public:
-	HTriggerNear(AAICharacter* owner, TSharedPtr<FVector> position) : HTrigger(owner), m_position(position), m_alreadyNear(false) {}
+	HTriggerNear(AAICharacter* owner, TSharedPtr<FVector> position) : HTrigger(owner), m_position(position) {} //, m_alreadyNear(false) {}
+	~HTriggerNear()
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Destroying trigger near"));
+	}
 	FString GetMenuName() override
 	{
 		return "When near...";
@@ -30,5 +34,5 @@ protected:
 
 private:
 	TSharedPtr<FVector> m_position;
-	bool m_alreadyNear;
+	//bool m_alreadyNear;
 };

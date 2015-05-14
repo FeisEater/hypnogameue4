@@ -14,6 +14,13 @@ public:
 		if (m_sound)
 			m_sound->AddToRoot();
 	}
+	~HTriggerHeard()
+	{
+		if (m_sound && m_sound->IsValidLowLevel())
+			m_sound->ConditionalBeginDestroy();
+		UE_LOG(LogTemp, Warning, TEXT("Destroying trigger heard"));
+	}
+
 	TSharedPtr<FVector> GetSoundSource();
 
 	FString GetMenuName() override;

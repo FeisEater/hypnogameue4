@@ -11,6 +11,10 @@ class HYPNOTOAD_API HTriggerSawHypnotizedNpc : public HTrigger
 {
 public:
 	HTriggerSawHypnotizedNpc(AAICharacter* owner) : HTrigger(owner) {}
+	~HTriggerSawHypnotizedNpc()
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Destroying trigger saw hypnotized npc"));
+	}
 	TSharedPtr<FVector> GetHypnotizedNpcLocation();
 
 	FString GetMenuName() override

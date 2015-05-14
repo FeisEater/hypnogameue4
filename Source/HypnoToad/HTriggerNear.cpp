@@ -6,7 +6,7 @@
 
 bool HTriggerNear::IsTriggered()
 {
-	if (m_alreadyNear && FVector::Dist(m_owner->GetActorLocation(), *m_position) > 500)
+	/*if (m_alreadyNear && FVector::Dist(m_owner->GetActorLocation(), *m_position) > 500)
 	{
 		m_alreadyNear = false;
 		return false;
@@ -15,8 +15,8 @@ bool HTriggerNear::IsTriggered()
 	{
 		m_alreadyNear = true;
 		return true;
-	}
-	return false;
+	}*/
+	return FVector::Dist(m_owner->GetActorLocation(), *m_position) < 200;
 }
 
 void HTriggerNear::CollectParameters()

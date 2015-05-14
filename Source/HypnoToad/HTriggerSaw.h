@@ -11,6 +11,10 @@ class HYPNOTOAD_API HTriggerSaw : public HTrigger
 {
 public:
 	HTriggerSaw(AAICharacter* owner, AActor* actor) : HTrigger(owner), m_actor(actor) {}
+	~HTriggerSaw()
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Destroying trigger saw"));
+	}
 
 	FString GetMenuName() override
 	{

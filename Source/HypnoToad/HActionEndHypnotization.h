@@ -14,7 +14,7 @@ public:
 		m_workWhileHypnotized = true;
 		m_actionCount = actionCount;
 	}
-	FString GetMenuName() override { return "End hypnotization" + HAction::GetMenuName(); }
+	FString GetMenuName() override { return "Wake up" + HAction::GetMenuName(); }
 	HAction* CreateAction() override { return new HActionEndHypnotization(m_owner, m_actionCount, m_overrideAttackState); }
 
 protected:
