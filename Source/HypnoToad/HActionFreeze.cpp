@@ -6,10 +6,9 @@
 
 void HActionFreeze::RunAction()
 {
-	if (m_owner->waitTime <= 0)
+	if (!m_owner->IsWaiting())
 	{
-		m_owner->waitTime = 1;
-		m_owner->GetController()->StopMovement();
+		m_owner->Wait(1);
 		Consume();
 	}
 }

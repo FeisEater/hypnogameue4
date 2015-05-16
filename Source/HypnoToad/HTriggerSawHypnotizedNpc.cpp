@@ -8,7 +8,7 @@ bool HTriggerSawHypnotizedNpc::IsTriggered()
 {
 	for (TActorIterator<AAICharacter> ActorItr(m_owner->GetWorld()); ActorItr; ++ActorItr)
 	{
-		if (ActorItr->IsHypnotized() && m_owner->CanSee(*ActorItr))
+		if (ActorItr->IsAsleep() && m_owner->CanSee(*ActorItr))
 		{
 			m_hypnotizedNpcLocation = ActorItr->GetActorLocation();
 			return true;

@@ -4,13 +4,14 @@
 #include "HTrigger.h"
 
 /**
- * 
+ * Triggers when correct sound is heard
  */
 class HYPNOTOAD_API HTriggerHeard : public HTrigger
 {
 public:
 	HTriggerHeard(AAICharacter* owner, USound* sound) : HTrigger(owner), m_sound(sound)
 	{
+		//Prevent m_sound from being garbage collected
 		if (m_sound)
 			m_sound->AddToRoot();
 	}
@@ -18,9 +19,9 @@ public:
 	{
 		if (m_sound && m_sound->IsValidLowLevel())
 			m_sound->ConditionalBeginDestroy();
-		UE_LOG(LogTemp, Warning, TEXT("Destroying trigger heard"));
 	}
 
+	/** Provide pointer to sound source location. */
 	TSharedPtr<FVector> GetSoundSource();
 
 	FString GetMenuName() override;
@@ -35,7 +36,8 @@ protected:
 	virtual bool IsTriggered() override;
 
 private:
+	/** Sound to hear */
 	USound* m_sound;
-
+	/** Sound origin location */
 	FVector m_soundSource;
 };

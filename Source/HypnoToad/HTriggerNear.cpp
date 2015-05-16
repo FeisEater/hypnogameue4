@@ -21,7 +21,6 @@ bool HTriggerNear::IsTriggered()
 
 void HTriggerNear::CollectParameters()
 {
-	APlayerController* plrController = *(m_owner->GetWorld()->GetPlayerControllerIterator());
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
-	plr->ShowActorParameterGui(plr->GetMarkedLocations());
+	//Collect marked location actor as parameter
+	GetPlayer()->ShowActorParameterGui(GetPlayer()->GetMarkedLocations());
 }

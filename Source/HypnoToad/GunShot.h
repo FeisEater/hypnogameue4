@@ -12,8 +12,7 @@ class HYPNOTOAD_API UGunShot : public USound
 
 public:
 	UGunShot(const FObjectInitializer& ObjectInitializer);
-	//virtual ~HGunShot() { UE_LOG(LogTemp, Warning, TEXT("gunshot destructed")); }
 
-private:
+protected:
 	bool Compare(USound* rhs) override;
 };

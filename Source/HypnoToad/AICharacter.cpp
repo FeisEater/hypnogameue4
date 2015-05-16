@@ -35,7 +35,8 @@ void AAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PPoint = StartPPoint;
+	//Initialize variables
+	m_ppoint = StartPPoint;
 	DesiredRotation = GetActorRotation();
 	m_havingConversation = false;
 	m_hypnotizedBy = NULL;
@@ -44,6 +45,19 @@ void AAICharacter::BeginPlay()
 	m_health = 3;
 	MaxTriggers = 8;
 
+	SetupDefaultTriggersActions();
+
+	UNavigationSystem::SimpleMoveToActor(Controller, m_ppoint);
+
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AAICharacter::OnOverlapBegin);
+
+	if (!Armed)
+		HideWeapon();
+}
+
+void AAICharacter::SetupDefaultTriggersActions()
+{
+	//Default trigger-action pairs
 	HTriggerSawHypnotizedNpc* t = new HTriggerSawHypnotizedNpc(this);
 	t->SetIndefinateAction(new HActionDetour(this, t->GetHypnotizedNpcLocation()));
 	HTrigger* t2 = new HTriggerSawPlayerHypnotizing(this);
@@ -52,15 +66,17 @@ void AAICharacter::BeginPlay()
 	t3->SetIndefinateAction(new HActionDetour(this, t3->GetSoundSource()));
 	HTrigger* t4 = new HTriggerSawPlayerInRestricted(this);
 	t4->SetIndefinateAction(new HActionAttack(this, GetWorld()->GetFirstPlayerController()->GetCharacter()));
-	triggers.Add(t);
-	triggers.Add(t2);
-	triggers.Add(t3);
-	triggers.Add(t4);
+	m_triggers.Add(t);
+	m_triggers.Add(t2);
+	m_triggers.Add(t3);
+	m_triggers.Add(t4);
 
+	//Trigger templates to use
 	m_availableTriggers.Add(new HTriggerSaw(this, NULL));
 	m_availableTriggers.Add(new HTriggerHeard(this, NULL));
 	m_availableTriggers.Add(new HTriggerNear(this, NULL));
 
+	//Action templates to use through conversation
 	m_availableLightActions.Add(new HActionIgnore(this));
 	m_availableLightActions.Add(new HActionDetour(this, NULL, 1000));
 	m_availableLightActions.Add(new HActionFreeze(this));
@@ -68,6 +84,7 @@ void AAICharacter::BeginPlay()
 	m_availableLightActions.Add(new HActionShoot(this));
 	m_availableLightActions.Add(new HActionSleep(this, NULL));
 
+	//Action templates to use through sleep
 	m_availableHeavyActions.Add(new HActionIgnore(this));
 	m_availableHeavyActions.Add(new HActionEndHypnotization(this));
 	m_availableHeavyActions.Add(new HActionAttack(this, NULL));
@@ -77,37 +94,17 @@ void AAICharacter::BeginPlay()
 	m_availableHeavyActions.Add(new HActionForgetEnemy(this, 5, true));
 	m_availableHeavyActions.Add(new HActionShoot(this));
 	m_availableHeavyActions.Add(new HActionSleep(this, NULL));
-
-	UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
-
-	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AAICharacter::OnOverlapBegin);
-
-	if (!Armed)
-	{
-		for (UActorComponent* gunMesh : GetComponentsByClass(UStaticMeshComponent::StaticClass()))
-		{
-			if (!gunMesh || gunMesh->GetName() != "Gun")
-				continue;
-			gunMesh->DestroyComponent();
-		}
-	}
 }
 
-/*
-void AAICharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void AAICharacter::Attack()
 {
-	for (HTrigger* t : triggers)
-		if (t != NULL)	delete t;
-	for (HTrigger* t : m_availableTriggers)
-		if (t != NULL)	delete t;
-	for (HTrigger* t : m_triggersToRemove)
-		if (t != NULL)	delete t;
-	for (HAction* a : m_availableLightActions)
-		if (a != NULL)	delete a;
-	for (HAction* a : m_availableHeavyActions)
-		if (a != NULL)	delete a;
+	m_attacking = true;
+	//End any conversations when deciding to attack
+	EndConversation();
+	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)GetWorld()->GetFirstPlayerController()->GetCharacter();
+	if (plr->HasConversationWith() == this)
+		plr->EndConversation();
 }
-*/
 
 // Called every frame
 void AAICharacter::Tick( float DeltaTime )
@@ -116,129 +113,202 @@ void AAICharacter::Tick( float DeltaTime )
 	
 	if (IsDead())	return;
 
-	for (HTrigger* t : triggers)
-	{
-		t->Trigger();
-	}
-	for (HTrigger* t : m_triggersToRemove)
-	{
-		triggers.Remove(t);
-		//if (t != NULL)	delete t;
-	}
-	m_triggersToRemove.Empty();
+	RunTriggers();
+	ClearRemovedTriggers();
 
-	for (USound* s : m_heardSounds)
-	{
-		DeleteObject(s);
-	}
-	m_heardSounds.Empty();
+	ClearHeardSounds();
 
 	if (m_rateOfFire > 0)
 		m_rateOfFire -= DeltaTime;
 
-	if (CanSee(m_currentEnemy) && !IsHypnotized())
-		m_attacking = true;
+	//When saw enemy while lucid, go to attack state
+	if (CanSee(m_currentEnemy) && !IsAsleep())
+	{
+		Attack();
+	}
 
 	if (m_attacking)
 	{
-		if (FVector::Dist(m_currentEnemy->GetActorLocation(), m_lastEnemyPosition) > 200)
-			DrawDebugBox(GetWorld(), m_lastEnemyPosition, FVector(50, 50, 100), FColor::Red);
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
-		m_rebuildPathTime -= DeltaTime;
-		if ((GetActorLocation() - m_currentEnemy->GetActorLocation()).Size() < 700 && CanSee(m_currentEnemy))
-			GetController()->StopMovement();
-		else
-		{
-			if (m_rebuildPathTime <= 0)
-				UNavigationSystem::SimpleMoveToLocation(Controller, m_lastEnemyPosition);
-		}
-		if (CanSee(m_currentEnemy))
-		{
-			if (!((ACharacter*)m_currentEnemy)->GetMovementComponent()->IsFalling())
-				m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
-			Shoot();
-			//GetCharacterMovement()->bOrientRotationToMovement = false;
-			//SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
-			m_timeToCare = 5;
-		}
-		else
-		{
-			//GetCharacterMovement()->bOrientRotationToMovement = true;
-			if (GetVelocity().Size() > 400)
-				DesiredRotation = GetVelocity().Rotation();
-			else
-				DesiredRotation.Yaw -= 60 * FMath::Sin(m_scanPosition - ((2 * PI * DeltaTime) / 5));
-			DesiredRotation.Pitch = 0;
-			DesiredRotation.Yaw += 60 * FMath::Sin(m_scanPosition);
-			m_scanPosition += (2 * PI * DeltaTime) / 5;
-			if (m_scanPosition >= 2 * PI)
-				m_scanPosition -= 2 * PI;
-			if (UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetActorLocation(), m_lastEnemyPosition)->GetPathLength() < 300)
-			{
-				m_timeToCare -= DeltaTime;
-				if (m_timeToCare <= 0)
-					StopAttack(false);
-			}
-		}
-		if (m_rebuildPathTime <= 0)
-			m_rebuildPathTime = 0.5f;
+		AttackTick(DeltaTime);
 	}
-	else if (waitTime <= 0 && !m_havingConversation && !m_hypnotizedBy)
+	else if (m_waitTime <= 0 && !m_havingConversation && !m_hypnotizedBy)
 	{
-		m_rebuildPathTime -= DeltaTime;
-		if (m_rebuildPathTime <= 0)
-		{
-			UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
-			m_rebuildPathTime = 0.5f;
-		}
-		if (Discovered)
-		{
-			UNavigationPath* path = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), PPoint);
-			if (path && path->PathPoints.Num() > 0)
-			{
-				FVector prev = path->PathPoints[0];
-				for (FVector v : path->PathPoints)
-				{
-					DrawDebugLine(GetWorld(), prev, v, FColor::Green, false, -1.f, -1, 3);
-					prev = v;
-				}
-			}
-		}
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-		DesiredRotation = GetActorRotation();
+		PatrolTick(DeltaTime);
 	}
 	else if (!m_hypnotizedBy)
 	{
 		if (!m_havingConversation)
 		{
-			waitTime -= DeltaTime;
-			if (waitTime <= 0)
-				UNavigationSystem::SimpleMoveToActor(Controller, PPoint);
+			WaitTick(DeltaTime);
 		}
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
 	}
 	else if (m_hypnotizedBy && m_followsHypnotizer)
 	{
-		float pathDist = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), m_hypnotizedBy)->GetPathLength();
-		if (pathDist < 1000)
-		{
-			UNavigationSystem::SimpleMoveToActor(Controller, m_hypnotizedBy);
-			GetCharacterMovement()->bOrientRotationToMovement = true;
-			DesiredRotation = GetActorRotation();
-		}
-		else
-			StayStillWhileHypnotized();
+		FollowTick(DeltaTime);
 	}
 
+	//Run when attacking, walk otherwise
 	GetCharacterMovement()->MaxWalkSpeed = m_attacking ? 500 : 200;
 }
 
-void AAICharacter::Shoot()
+void AAICharacter::RunTriggers()
 {
-	m_scanPosition = 0;
+	for (HTrigger* t : m_triggers)
+	{
+		t->Trigger();
+	}
+}
+
+void AAICharacter::ClearRemovedTriggers()
+{
+	for (HTrigger* t : m_triggersToRemove)
+	{
+		m_triggers.Remove(t);
+	}
+	m_triggersToRemove.Empty();
+}
+
+void AAICharacter::ClearHeardSounds()
+{
+	for (USound* s : m_heardSounds)
+	{
+		DeleteObject(s);
+	}
+	m_heardSounds.Empty();
+}
+
+void AAICharacter::AttackTick(float DeltaTime)
+{
+	//Draw box when target's position is far enough away from last seen position
+	if (FVector::Dist(m_currentEnemy->GetActorLocation(), m_lastEnemyPosition) > 200)
+		DrawDebugBox(GetWorld(), m_lastEnemyPosition, FVector(50, 50, 100), FColor::Red);
+
+	//Npc is aiming at all directions, or looking around when lost enemy.
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	//Interpolate rotation
+	SetActorRotation(FMath::RInterpTo(GetActorRotation(), DesiredRotation, DeltaTime, 6.28f));
+
+	m_rebuildPathTime -= DeltaTime;
+	
+	//Stop and shoot when target is seen and close enough
+	if (FVector::Dist(GetActorLocation(), m_currentEnemy->GetActorLocation()) < 700 && CanSee(m_currentEnemy))
+		GetController()->StopMovement();
+	else
+	{
+		//Run to last seen enemy position otherwise
+		if (m_rebuildPathTime <= 0)
+			UNavigationSystem::SimpleMoveToLocation(Controller, m_lastEnemyPosition);
+	}
+
+	if (CanSee(m_currentEnemy))
+	{
+		//Don't try to navigate to the position in the air.
+		if (m_currentEnemy->IsA(ACharacter::StaticClass()) && !((ACharacter*)m_currentEnemy)->GetMovementComponent()->IsFalling())
+			m_lastEnemyPosition = m_currentEnemy->GetActorLocation();
+
+		Shoot();
+		//reset care timer
+		m_timeToCare = 5;
+	}
+	else
+	{
+		//Set base direction as direction of the movement velocity
+		if (GetVelocity().Size() > 400)
+		{
+			DesiredRotation = GetVelocity().Rotation();
+		}
+		else
+		{
+			//Otherwise we might get zero vector, so direction can't be derived.
+			//In that case revert to direction in the last tick
+			DesiredRotation.Yaw -= 60 * FMath::Sin(m_scanPosition - ((2 * PI * DeltaTime) / 5));
+		}
+		//Npc doesn't look up and down
+		DesiredRotation.Pitch = 0;
+		
+		//Look left and right in a sine wave
+		DesiredRotation.Yaw += 60 * FMath::Sin(m_scanPosition);
+		m_scanPosition += (2 * PI * DeltaTime) / 5;
+		//Loop around on 2*PI radians
+		if (m_scanPosition >= 2 * PI)
+			m_scanPosition -= 2 * PI;
+		
+		//When close to last seen enemy position, wait a bit
+		if (UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetActorLocation(), m_lastEnemyPosition)->GetPathLength() < 300)
+		{
+			m_timeToCare -= DeltaTime;
+			//If waited enough, leave attack state, but remember the enemy
+			if (m_timeToCare <= 0)
+				StopAttack(false);
+		}
+	}
+	if (m_rebuildPathTime <= 0)
+		m_rebuildPathTime = 0.5f;
+}
+
+void AAICharacter::PatrolTick(float DeltaTime)
+{
+	m_rebuildPathTime -= DeltaTime;
+	if (m_rebuildPathTime <= 0)
+	{
+		UNavigationSystem::SimpleMoveToActor(Controller, m_ppoint);
+		m_rebuildPathTime = 0.5f;
+	}
+
+	VisualizePath();
+
+	//look where you're moving
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	DesiredRotation = GetActorRotation();
+}
+
+void AAICharacter::VisualizePath()
+{
+	if (!Discovered)
+		return;
+	
+	//Couldn't find how to get the path character currently is following, so i'm recalculating it instead.
+	UNavigationPath* path = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), m_ppoint);
+	if (path && path->PathPoints.Num() > 0)
+	{
+		FVector prev = path->PathPoints[0];
+		//Connecting the dots
+		for (FVector v : path->PathPoints)
+		{
+			DrawDebugLine(GetWorld(), prev, v, FColor::Green, false, -1.f, -1, 3);
+			prev = v;
+		}
+	}
+}
+
+void AAICharacter::WaitTick(float DeltaTime)
+{
+	m_waitTime -= DeltaTime;
+	//When waited enough, return to patrol state
+	if (m_waitTime <= 0)
+		UNavigationSystem::SimpleMoveToActor(Controller, m_ppoint);
+}
+
+void AAICharacter::FollowTick(float DeltaTime)
+{
+	float pathDist = UNavigationSystem::FindPathToActorSynchronously(GetWorld(), GetActorLocation(), m_hypnotizedBy)->GetPathLength();
+	//Only follow hypnotizer when close to him (when escorted)
+	if (pathDist < 1000)
+	{
+		UNavigationSystem::SimpleMoveToActor(Controller, m_hypnotizedBy);
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		DesiredRotation = GetActorRotation();
+	}
+	else
+		StayStillWhileAsleep();
+}
+
+FVector AAICharacter::FaceEnemy()
+{
 	FVector Dir;
+	//When has target, face it and shoot at its direction
 	if (m_currentEnemy && m_attacking)
 	{
 		Dir = (m_currentEnemy->GetActorLocation() - GetActorLocation());
@@ -246,32 +316,52 @@ void AAICharacter::Shoot()
 		FVector Dir2d = Dir;
 		Dir2d.Z = 0;
 		Dir2d.Normalize();
+		//Direction is changed here
 		DesiredRotation = Dir2d.Rotation();
 	}
 	else
 	{
+		//Otherwise shoot wherever currently looking
 		Dir = GetActorRotation().Vector();
 	}
-	if (m_rateOfFire > 0)
-		return;
-	m_rateOfFire = 0.5f;
-	//const FName TraceTag("MyTraceTag");
-	//GetWorld()->DebugDrawTraceTag = TraceTag;
-	FCollisionQueryParams Params;
-	//Params.TraceTag = TraceTag;
-	Params.AddIgnoredActor(this);
-	FHitResult Hit;
-	FVector Start = GetActorLocation();
+	return Dir;
+}
+
+FVector AAICharacter::ApplySpread(FVector Dir)
+{
 	FVector Up, Right;
 	Dir.FindBestAxisVectors(Up, Right);
 	float angle = FMath::FRandRange(0, 2 * PI);
 	float radius = FMath::FRandRange(0, 10);
 	Dir = Dir.RotateAngleAxis(radius * FMath::Sin(angle), Up);
 	Dir = Dir.RotateAngleAxis(radius * FMath::Cos(angle), Right);
+	return Dir;
+}
+
+void AAICharacter::Shoot()
+{
+	//Don't scan when shooting
+	m_scanPosition = 0;
+	//Direction is changed even if it's not the time to shoot yet due to rate of fire
+	FVector Dir = FaceEnemy();
+
+	if (m_rateOfFire > 0)
+		return;
+	//Reset rate of fire
+	m_rateOfFire = 0.5f;
+		
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	FHitResult Hit;
+	FVector Start = GetActorLocation();
+	Dir = ApplySpread(Dir);
 	FVector End = Start + (Dir * 1000000);
+
 	if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params))
 	{
+		//Draw bullet trajectory, although it looks like a laser
 		DrawDebugLine(GetWorld(), Start, Hit.ImpactPoint, FColor::Red, false, 0.25f, -1, 2);
+		//Prevents crash in case it hits BSP brush, check HypnoToadcharacter.cpp for details
 		if (!Hit.Component.Get()->IsA(UModelComponent::StaticClass()))
 		{
 			if (Hit.Actor->IsA(AAICharacter::StaticClass()))
@@ -288,6 +378,8 @@ void AAICharacter::Shoot()
 			}
 		}
 	}
+
+	//Broadcast gunshot sound
 	USound* gunShot = NewObject<UGunShot>();
 	gunShot->Origin = GetActorLocation();
 	USound::BroadCastSound(GetWorld(), gunShot);
@@ -297,33 +389,38 @@ void AAICharacter::Hurt(AAICharacter* victim)
 {
 	if (!Armed)
 		return;
+
 	--victim->m_health;
+	//Infighting
 	if (!victim->IsAttacking())
-		victim->Attack(this);
+		victim->SetEnemy(this);
+	//Check if victim is dead
 	if (victim->IsDead())
 	{
 		victim->GetController()->StopMovement();
-		USkeletalMeshComponent* mesh = (USkeletalMeshComponent*)victim->GetComponentByClass(USkeletalMeshComponent::StaticClass());
-		if (mesh)
-		{
-			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			mesh->SetSimulatePhysics(true);
-			StopAttack(true);
-			for (UActorComponent* gunMesh : victim->GetComponentsByClass(UStaticMeshComponent::StaticClass()))
-			{
-				if (!gunMesh || gunMesh->GetName() != "Gun")
-					continue;
-				gunMesh->DestroyComponent();
-			}
-		}
+		victim->Ragdollize();
+		StopAttack(true);
+		victim->HideWeapon();
+	}
+}
+
+void AAICharacter::Ragdollize()
+{
+	USkeletalMeshComponent* mesh = (USkeletalMeshComponent*)GetComponentByClass(USkeletalMeshComponent::StaticClass());
+	if (mesh)
+	{
+		mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		mesh->SetSimulatePhysics(true);
 	}
 }
 
 bool AAICharacter::CanSee(AActor* actor)
 {
 	if (!actor)	return false;
+	
 	FVector diff = actor->GetActorLocation() - GetActorLocation();
 	diff.Normalize();
+	//Actor in viewcone
 	float dot = FVector::DotProduct(GetActorRotation().Vector(), diff);
 	if (dot < 0.7f)
 		return false;
@@ -336,17 +433,17 @@ bool AAICharacter::CanSee(AActor* actor)
 		&& Hit.Actor.Get() == actor;
 }
 
-void AAICharacter::Attack(AActor* actor)
+void AAICharacter::SetEnemy(AActor* actor)
 {
-	if (!Armed || IsHypnotized())
+	if (!Armed || IsAsleep())
+		return;
+	if (actor->IsA(AAICharacter::StaticClass()) && ((AAICharacter*)actor)->IsDead())
+		return;
+	if (actor->IsA(AHypnoToadCharacter::StaticClass()) && ((AHypnoToadCharacter*)actor)->IsDead())
 		return;
 	m_currentEnemy = actor;
 	m_timeToCare = 0;
 	m_scanPosition = 0;
-	EndConversation();
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)GetWorld()->GetFirstPlayerController()->GetCharacter();
-	if (plr->HasConversationWith() == this)
-		plr->EndConversation();
 }
 
 void AAICharacter::StopAttack(bool forgetEnemy)
@@ -370,20 +467,20 @@ void AAICharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 
 APathPoint* AAICharacter::GetNextPPoint()
 {
-	return PPoint;
+	return m_ppoint;
 }
 
 void AAICharacter::SetNextPPoint(APathPoint* pp)
 {
-	PPoint = pp;
+	m_ppoint = pp;
 	m_rebuildPathTime = 0;
 }
 
 void AAICharacter::WaitAndHeadToNextPoint(APathPoint* PrevPoint)
 {
-	waitTime = PrevPoint->waitTime;
+	m_waitTime = PrevPoint->waitTime;
 	m_rebuildPathTime = 0;
-	PPoint = (APathPoint*)PrevPoint->NextPPoint;
+	m_ppoint = (APathPoint*)PrevPoint->NextPPoint;
 	DesiredRotation = PrevPoint->GetActorRotation();
 }
 
@@ -392,6 +489,7 @@ void AAICharacter::ActivateConversation(AHypnoToadCharacter* plr)
 	GetController()->StopMovement();
 	m_havingConversation = true;
 	
+	//face player
 	FVector vec = plr->GetActorLocation() - GetActorLocation();
 	vec.Normalize();
 	DesiredRotation = vec.Rotation();
@@ -404,14 +502,11 @@ void AAICharacter::ActivateConversation(AHypnoToadCharacter* plr)
 void AAICharacter::EndConversation()
 {
 	m_havingConversation = false;
-	//if (m_pendingAction != NULL)	delete m_pendingAction;
 	m_pendingAction = NULL;
-	//if (!triggers.Contains(m_pendingTrigger) && m_pendingTrigger != NULL)
-	//	delete m_pendingTrigger;
 	m_pendingTrigger = NULL;
 }
 
-void AAICharacter::Hypnotize(AHypnoToadCharacter* plr, bool followPlayer)
+void AAICharacter::Sleep(AHypnoToadCharacter* plr, bool followPlayer)
 {
 	m_hypnotizedBy = plr;
 	if (followPlayer)
@@ -420,7 +515,7 @@ void AAICharacter::Hypnotize(AHypnoToadCharacter* plr, bool followPlayer)
 		plr->EndConversation();
 }
 
-void AAICharacter::EndHypnotization()
+void AAICharacter::EndSleep()
 {
 	m_hypnotizedBy = NULL;
 	m_followsHypnotizer = false;
@@ -429,13 +524,13 @@ void AAICharacter::EndHypnotization()
 		plr->EndConversation();
 }
 
-void AAICharacter::StayStillWhileHypnotized()
+void AAICharacter::StayStillWhileAsleep()
 {
 	m_followsHypnotizer = false;
 	GetController()->StopMovement();
 }
 
-bool AAICharacter::IsHypnotized()
+bool AAICharacter::IsAsleep()
 {
 	return m_hypnotizedBy != NULL;
 }
@@ -467,8 +562,9 @@ void AAICharacter::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComp
 {
 	if (!OtherActor->IsA(AAICharacter::StaticClass()))
 		return;
+	//When touched sleeping ai character, wake it up
 	AAICharacter* ai = (AAICharacter*)OtherActor;
-	ai->EndHypnotization();
+	ai->EndSleep();
 }
 
 void AAICharacter::PrepareTriggerViaIndex(int32 index)
@@ -479,7 +575,7 @@ void AAICharacter::PrepareTriggerViaIndex(int32 index)
 
 void AAICharacter::PrepareActiveTriggerViaIndex(int32 index)
 {
-	m_pendingTrigger = triggers[index];
+	m_pendingTrigger = m_triggers[index];
 }
 
 void AAICharacter::AttachPendingTrigger()
@@ -487,8 +583,9 @@ void AAICharacter::AttachPendingTrigger()
 	if (!m_pendingTrigger || !m_pendingAction)
 		return;
 	m_pendingTrigger->SetAction(m_pendingAction);
-	if (!triggers.Contains(m_pendingTrigger))
-		triggers.Add(m_pendingTrigger);
+	//Check if pending trigger is new
+	if (!m_triggers.Contains(m_pendingTrigger))
+		m_triggers.Add(m_pendingTrigger);
 	m_pendingTrigger = NULL;
 	m_pendingAction = NULL;
 	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)GetWorld()->GetFirstPlayerController()->GetCharacter();
@@ -503,7 +600,7 @@ void AAICharacter::PrepareActionViaIndex(int32 index)
 
 TArray<HAction*> AAICharacter::GetActions()
 {
-	if (IsHypnotized())
+	if (IsAsleep())
 		return m_availableHeavyActions;
 	return m_availableLightActions;
 }
@@ -525,14 +622,36 @@ AActor* AAICharacter::GetEnemy()
 
 bool AAICharacter::IsInfluenced()
 {
-	if (triggers.Num() > 4)
+	if (m_triggers.Num() > 4)
 		return true;
-	for (HTrigger* t : triggers)
+	for (HTrigger* t : m_triggers)
 		if (t->GetAction() != t->GetDefaultAction())	return true;
 	return false;
 }
 
 bool AAICharacter::IsMaxedInfluenced()
 {
-	return triggers.Num() >= MaxTriggers;
+	return m_triggers.Num() >= MaxTriggers;
+}
+
+void AAICharacter::HideWeapon()
+{
+	for (UActorComponent* gunMesh : GetComponentsByClass(UStaticMeshComponent::StaticClass()))
+	{
+		//Hacky way to find component by name
+		if (!gunMesh || gunMesh->GetName() != "Gun")
+			continue;
+		gunMesh->DestroyComponent();
+	}
+}
+
+bool AAICharacter::IsWaiting()
+{
+	return m_waitTime > 0;
+}
+
+void AAICharacter::Wait(float Time)
+{
+	m_waitTime = Time;
+	GetController()->StopMovement();
 }

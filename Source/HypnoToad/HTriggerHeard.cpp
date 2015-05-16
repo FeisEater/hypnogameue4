@@ -26,16 +26,17 @@ TSharedPtr<FVector> HTriggerHeard::GetSoundSource()
 
 void HTriggerHeard::CollectParameters()
 {
-	APlayerController* plrController = *(m_owner->GetWorld()->GetPlayerControllerIterator());
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
-	plr->ShowSoundParameterGui();
+	//Collect sound information from gui
+	GetPlayer()->ShowSoundParameterGui();
 }
 
 void HTriggerHeard::SetSoundParameter(USound* sound)
 {
 	USound* oldSound = m_sound;
 	m_sound = sound;
+	//Prevent new sound from being garbage collected
 	m_sound->AddToRoot();
+	//Force old sound deletion
 	if (oldSound->IsValidLowLevel())
 		oldSound->ConditionalBeginDestroy();
 	HTrigger::SetSoundParameter(sound);

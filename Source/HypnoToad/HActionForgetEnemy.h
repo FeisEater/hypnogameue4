@@ -4,7 +4,7 @@
 #include "HAction.h"
 
 /**
- * 
+ * Forget enemy
  */
 class HYPNOTOAD_API HActionForgetEnemy : public HAction
 {

@@ -4,13 +4,14 @@
 #include "HAction.h"
 
 /**
- * 
+ * Say a word
  */
 class HYPNOTOAD_API HActionSay : public HAction
 {
 public:
 	HActionSay(AAICharacter* owner, USound* word, float actionCount = 10, bool overrideAttack = false) : HAction(owner, overrideAttack), m_sound(word)
 	{
+		//Prevent m_sound from being garbage collected
 		if (m_sound)
 			m_sound->AddToRoot();
 		m_actionCount = actionCount;
@@ -19,7 +20,6 @@ public:
 	{
 		if (m_sound && m_sound->IsValidLowLevel())
 			m_sound->ConditionalBeginDestroy();
-		UE_LOG(LogTemp, Warning, TEXT("Destroying action say"));
 	}
 
 	FString GetMenuName() override;
@@ -31,6 +31,8 @@ protected:
 	virtual void RunAction() override;
 
 private:
+	/** Sound to broadcast */
 	USound* m_sound;
+	/** To not consume counter every tick, consume it via timer. */
 	FTimerHandle m_timer;
 };

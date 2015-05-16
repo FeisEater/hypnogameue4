@@ -18,6 +18,7 @@ APathPoint::APathPoint()
 	MyCollisionComp->OnComponentBeginOverlap.AddDynamic(this, &APathPoint::OnOverlapBegin);
 	
 	Overridable = false;
+	PlacedByPlayer = false;
 }
 
 // Called when the game starts or when spawned
@@ -36,6 +37,7 @@ void APathPoint::Tick( float DeltaTime )
 
 void APathPoint::OnOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	//We don't care about anyone except ai characters
 	if (!OtherActor->IsA(AAICharacter::StaticClass()))
 		return;
 	AAICharacter* ai = (AAICharacter*)OtherActor;

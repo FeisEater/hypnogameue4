@@ -14,6 +14,8 @@
 AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	//Following code came with empty unreal 4 project
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -46,18 +48,19 @@ AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitial
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 
+	//Following block written by me
+
+	//Find blueprint class to spawn later as location markers
 	ConstructorHelpers::FObjectFinder<UBlueprint> Blueprint(TEXT("Blueprint'/Game/MyBlueprints/PathPointMarker_Blueprint.PathPointMarker_Blueprint'"));
 	if (Blueprint.Object != NULL)
 		PathPointMarkerClass = (UClass*)Blueprint.Object->GeneratedClass;
 
+	//Initialize variable values
 	m_InGuiMode = false;
 	InRestrictedArea = false;
 	m_creatingTrigger = false;
 	m_hypnoseDelay = 3;
 	m_health = 5;
-
-	//WidgetInstance = CreateWidget(this, WidgetTemplate);
-	//WidgetInstance->AddToViewport();
 }
 
 void AHypnoToadCharacter::SetGUIMode(bool isGUI)
@@ -67,15 +70,12 @@ void AHypnoToadCharacter::SetGUIMode(bool isGUI)
 	plr->bShowMouseCursor = isGUI;
 	plr->bEnableClickEvents = isGUI;
 	plr->bEnableMouseOverEvents = isGUI;
-	this->ShowConversationGUI(isGUI);
+	ShowConversationGUI(isGUI);
 	m_InGuiMode = isGUI;
-	//FInputModeGameAndUI input;
-	//input.SetLockMouseToViewport(isGUI);
-	//plr->SetInputMode(input);
-	//if (isGUI)
-	//GEngine->GameViewport->Viewport->LockMouseToViewport(true);
 }
 
+//When trace hits BSP brush, FHitResult.Actor.Get() return NULL, causing exceptions. However FHitResult.Component.Get() returns something useful.
+//This helper function is used to track whether BSP brush was hit, and FHitResult.Actor.Get() shouldn't be called.
 bool HitBrush(FHitResult &Hit)
 {
 	return Hit.Component.Get()->IsA(UModelComponent::StaticClass());
@@ -91,100 +91,115 @@ void AHypnoToadCharacter::Tick(float DeltaTime)
 
 	if (m_creatingTrigger)
 	{
+		//Progress with hypnotization
 		m_hypnoseDelay -= DeltaTime;
 		if (m_conversationWith && m_hypnoseDelay <= 0)
 		{
+			//finally done with hypnotization
 			m_conversationWith->AttachPendingTrigger();
 			EndHypnotization();
 		}
 	}
 
-	APlayerController* plr = (APlayerController*)GetController();
-	if (plr->WasInputKeyJustPressed(EKeys::F))
+	DiscoverNPCs();
+}
+
+void AHypnoToadCharacter::ToggleConversation()
+{
+	if (m_conversationWith)
 	{
-		if (m_conversationWith)
+		m_conversationWith->EndConversation();
+		EndConversation();
+	}
+	else
+	{
+		StartConversation();
+	}
+}
+
+void AHypnoToadCharacter::ToggleSay()
+{
+	if (m_conversationWith == NULL)
+		SetGUIMode(!m_InGuiMode);
+}
+
+bool SurfaceIsWall(FHitResult& Hit)
+{
+	return Hit.ImpactNormal.Z < 0.5f && Hit.ImpactNormal.Z > -0.5f;
+}
+
+void AHypnoToadCharacter::CreateSticker(FHitResult& Hit)
+{
+	FRotator rot = (-Hit.ImpactNormal).Rotation();
+	rot.Roll = 90;	//this is correct rotation for some reason
+	ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.ImpactPoint + Hit.ImpactNormal * 20, rot);
+	decal->GetDecal()->SetDecalMaterial(StickerMaterial);
+	decal->SetActorScale3D(FVector(30, 30, 30));
+	//Box collision needed so it is visible to ai characters
+	decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+}
+
+void AHypnoToadCharacter::PlaceSticker()
+{
+	APlayerController* plr = (APlayerController*)GetController();
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	FHitResult Hit;
+	FVector Start = plr->PlayerCameraManager->GetCameraLocation();
+	FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
+	if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && SurfaceIsWall(Hit))
+	{
+		//When looking at placed sticker, remove it.
+		if (!HitBrush(Hit) && Hit.Actor.Get()->IsA(ADecalActor::StaticClass()))
 		{
-			m_conversationWith->EndConversation();
-			EndConversation();
+			GetWorld()->DestroyActor(Hit.Actor.Get());
 		}
 		else
 		{
-			AAICharacter* ai = InterractsWithNPC(300);
-			if (ai)
-			{
-				m_conversationWith = ai;
-				ai->ActivateConversation(this);
-				SetGUIMode(true);
-			}
+			CreateSticker(Hit);
 		}
 	}
+}
 
-	if (plr->WasInputKeyJustPressed(EKeys::Q))
+void AHypnoToadCharacter::PlaceMarker()
+{
+	//sanity check
+	if (!PathPointMarkerClass)
+		return;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	FHitResult Hit;
+	FVector End = GetActorLocation() - FVector::UpVector * 200;
+	if (GetWorld()->LineTraceSingle(Hit, GetActorLocation(), End, ECC_Visibility, Params))
 	{
-		AAICharacter* ai = InterractsWithNPC(200);
-		if (ai && !m_hypnotized && !ai->IsAttacking())
-		{
-			m_hypnotized = ai;
-			ai->Hypnotize(this, true);
-			GetCharacterMovement()->MaxWalkSpeed = 200;
-		}
-		else if (m_hypnotized)
-		{
-			m_hypnotized->StayStillWhileHypnotized();
-			m_hypnotized = NULL;
-			GetCharacterMovement()->MaxWalkSpeed = 600;
-		}
+		FVector* loc = new FVector(Hit.ImpactPoint);
+		FRotator* rot = new FRotator(GetActorRotation());
+		AActor* marker = GetWorld()->SpawnActor(PathPointMarkerClass, loc, rot);
+		//PathPointMarkerClass should always be inherited from APathPoint
+		if (marker->IsA(APathPoint::StaticClass()))
+			((APathPoint*)marker)->PlacedByPlayer = true;
 	}
-	
-	if (plr->WasInputKeyJustPressed(EKeys::E))
+}
+
+void AHypnoToadCharacter::PutToSleep()
+{
+	AAICharacter* ai = InterractsWithNPC(200);
+	if (ai && !m_sleepingEscort && !ai->IsAttacking())
 	{
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(plr->GetPawn());
-		FHitResult Hit;
-		FVector Start = plr->PlayerCameraManager->GetCameraLocation();
-		FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * 1000.0f);
-		if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && Hit.ImpactNormal.Z < 0.5f && Hit.ImpactNormal.Z > -0.5f)
-		{
-			if (!HitBrush(Hit) && Hit.Actor.Get()->IsA(ADecalActor::StaticClass()))
-			{
-				GetWorld()->DestroyActor(Hit.Actor.Get());
-			}
-			else
-			{
-				FRotator rot = (-Hit.ImpactNormal).Rotation();
-				rot.Roll = 90;
-				FActorSpawnParameters param;
-				//param.Name = something
-				ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.ImpactPoint + Hit.ImpactNormal * 20, rot, param);
-				decal->GetDecal()->SetDecalMaterial(StickerMaterial);
-				decal->SetActorScale3D(FVector(30, 30, 30));
-				decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-				decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-				decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-			}
-		}
+		m_sleepingEscort = ai;
+		ai->Sleep(this, true);
+		//Walk slower when escorting
+		GetCharacterMovement()->MaxWalkSpeed = 200;
 	}
-
-	if (plr->WasInputKeyJustPressed(EKeys::R) && m_conversationWith == NULL)
-		SetGUIMode(!m_InGuiMode);
-
-	if (plr->WasInputKeyJustPressed(EKeys::Tab) && PathPointMarkerClass)
+	else if (m_sleepingEscort)
 	{
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(plr->GetPawn());
-		FHitResult Hit;
-		FVector End = GetActorLocation() - FVector::UpVector * 200;
-		if (GetWorld()->LineTraceSingle(Hit, GetActorLocation(), End, ECC_Visibility, Params))
-		{
-			FVector* loc = new FVector(Hit.ImpactPoint);
-			FRotator* rot = new FRotator(GetActorRotation());
-			FActorSpawnParameters param;
-			//param.Name = ...
-			GetWorld()->SpawnActor(PathPointMarkerClass, loc, rot, param);
-		}
+		//When toggling, don't wake up, rather stop escorting
+		m_sleepingEscort->StayStillWhileAsleep();
+		m_sleepingEscort = NULL;
+		GetCharacterMovement()->MaxWalkSpeed = 600;
 	}
-
-	DiscoverNPCs();
 }
 
 void AHypnoToadCharacter::DiscoverNPCs()
@@ -212,11 +227,13 @@ AAICharacter* AHypnoToadCharacter::InterractsWithNPC(float range)
 {
 	APlayerController* plr = (APlayerController*)GetController();
 	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(plr->GetPawn());
+	Params.AddIgnoredActor(this);
 	FHitResult Hit;
 	FVector Start = plr->PlayerCameraManager->GetCameraLocation();
 	FVector End = Start + (plr->PlayerCameraManager->GetCameraRotation().Vector() * (range + 400));
 	
+	//First trace from camera:
+	//Following check also collects trace results in variable Hit
 	if (!GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params))
 		return NULL;
 	if (HitBrush(Hit))
@@ -224,12 +241,25 @@ AAICharacter* AHypnoToadCharacter::InterractsWithNPC(float range)
 	if (!Hit.Actor.Get()->IsA(AAICharacter::StaticClass()))
 		return NULL;
 
+	//Second trace from player character:
 	AAICharacter* ai = (AAICharacter*)Hit.Actor.Get();
 	Start = GetActorLocation();
 	End = Hit.ImpactPoint;
 	if (!GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) || (Hit.ImpactPoint - Start).Size() > range || Hit.Actor.Get() != ai)
 		return NULL;
+	//When both traces result same ai character, return given character
 	return ai;
+}
+
+void AHypnoToadCharacter::StartConversation()
+{
+	AAICharacter* ai = InterractsWithNPC(300);
+	if (ai)
+	{
+		m_conversationWith = ai;
+		ai->ActivateConversation(this);
+		SetGUIMode(true);
+	}
 }
 
 void AHypnoToadCharacter::EndConversation()
@@ -242,12 +272,19 @@ void AHypnoToadCharacter::EndConversation()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
+//Code came with unreal 4 project
 void AHypnoToadCharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
 	// Set up gameplay key bindings
 	check(InputComponent);
 	InputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	InputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	InputComponent->BindAction("ToggleConversation", IE_Pressed, this, &AHypnoToadCharacter::ToggleConversation);
+	InputComponent->BindAction("ToggleSay", IE_Pressed, this, &AHypnoToadCharacter::ToggleSay);
+	InputComponent->BindAction("PlaceSticker", IE_Pressed, this, &AHypnoToadCharacter::PlaceSticker);
+	InputComponent->BindAction("PlaceMarker", IE_Pressed, this, &AHypnoToadCharacter::PlaceMarker);
+	InputComponent->BindAction("PutToSleep", IE_Pressed, this, &AHypnoToadCharacter::PutToSleep);
 
 	InputComponent->BindAxis("MoveForward", this, &AHypnoToadCharacter::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AHypnoToadCharacter::MoveRight);
@@ -265,7 +302,7 @@ void AHypnoToadCharacter::SetupPlayerInputComponent(class UInputComponent* Input
 	InputComponent->BindTouch(IE_Released, this, &AHypnoToadCharacter::TouchStopped);
 }
 
-
+//Code came with unreal 4 project
 void AHypnoToadCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
 	if (IsDead())
@@ -277,6 +314,7 @@ void AHypnoToadCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Lo
 	}
 }
 
+//Code came with unreal 4 project
 void AHypnoToadCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
 {
 	if (FingerIndex == ETouchIndex::Touch1)
@@ -285,18 +323,21 @@ void AHypnoToadCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Lo
 	}
 }
 
+//Code came with unreal 4 project
 void AHypnoToadCharacter::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
+//Code came with unreal 4 project
 void AHypnoToadCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
+//Code came with unreal 4 project
 void AHypnoToadCharacter::MoveForward(float Value)
 {
 	if (IsDead())
@@ -314,6 +355,7 @@ void AHypnoToadCharacter::MoveForward(float Value)
 	}
 }
 
+//Code came with unreal 4 project
 void AHypnoToadCharacter::MoveRight(float Value)
 {
 	if (IsDead())
@@ -332,9 +374,9 @@ void AHypnoToadCharacter::MoveRight(float Value)
 	}
 }
 
-bool AHypnoToadCharacter::IsHypnotizing()
+bool AHypnoToadCharacter::IsEscorting()
 {
-	return m_hypnotized != NULL;
+	return m_sleepingEscort != NULL;
 }
 
 AAICharacter* AHypnoToadCharacter::HasConversationWith()
@@ -389,20 +431,14 @@ TArray<FString> AHypnoToadCharacter::GetNpcActiveActionNames()
 void AHypnoToadCharacter::CreateTriggerThroughIndex(int32 index)
 {
 	if (m_conversationWith == NULL)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Something's wrong"));
 		return;
-	}
 	m_conversationWith->PrepareTriggerViaIndex(index);
 }
 
 void AHypnoToadCharacter::ChangeTriggersActionThroughIndex(int32 index)
 {
 	if (m_conversationWith == NULL)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Something's wrong"));
 		return;
-	}
 	m_conversationWith->PrepareActiveTriggerViaIndex(index);
 	ShowActionsGui();
 }
@@ -421,11 +457,13 @@ void AHypnoToadCharacter::PassWordParameter(FString word)
 		return;
 	UWord* said = NewObject<UWord>();
 	said->Content = word;
+	//if we don't have action pending, assign parameter to pending trigger
 	if (m_conversationWith->GetPendingAction() == NULL)
 	{
 		m_conversationWith->GetPendingTrigger()->SetSoundParameter(said);
 		return;
 	}
+	//otherwise assign to pending action
 	m_conversationWith->GetPendingAction()->SetSoundParameter(said);
 }
 
@@ -442,10 +480,7 @@ TArray<FString> AHypnoToadCharacter::GetNpcActionNames()
 void AHypnoToadCharacter::CreateActionThroughIndex(int32 index)
 {
 	if (m_conversationWith == NULL)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Something's wrong"));
 		return;
-	}
 	m_conversationWith->PrepareActionViaIndex(index);
 }
 
@@ -457,6 +492,7 @@ TArray<AActor*> AHypnoToadCharacter::GetNpcAttackTargets()
 		if (ActorItr->Discovered)
 			result.Add(*ActorItr);
 	}
+	//player is also attack target
 	result.Add(this);
 	return result;
 }
@@ -465,7 +501,7 @@ TArray<AActor*> AHypnoToadCharacter::GetMarkedLocations()
 {
 	TArray<AActor*> result;
 	for (TActorIterator<APathPoint> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-		result.Add(*ActorItr);
+		if (ActorItr->PlacedByPlayer)	result.Add(*ActorItr);
 	return result;
 }
 
@@ -481,11 +517,13 @@ void AHypnoToadCharacter::PassActorParameter(AActor* actor)
 {
 	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger() == NULL)
 		return;
+	//if we don't have action pending, assign parameter to pending trigger
 	if (m_conversationWith->GetPendingAction() == NULL)
 	{
 		m_conversationWith->GetPendingTrigger()->SetActorParameter(actor);
 		return;
 	}
+	//otherwise pass parameter to pending action
 	m_conversationWith->GetPendingAction()->SetActorParameter(actor);
 }
 
@@ -534,17 +572,23 @@ float AHypnoToadCharacter::HypnotizationDelayStatus()
 	return 1.0f - m_hypnoseDelay / 3.0f;
 }
 
+void AHypnoToadCharacter::Ragdollize()
+{
+	USkeletalMeshComponent* mesh = (USkeletalMeshComponent*)GetComponentByClass(USkeletalMeshComponent::StaticClass());
+	if (mesh)
+	{
+		mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		mesh->SetSimulatePhysics(true);
+	}
+}
+
 void AHypnoToadCharacter::LoseHealth()
 {
 	--m_health;
+	//Check if player is dead
 	if (IsDead())
 	{
-		USkeletalMeshComponent* mesh = (USkeletalMeshComponent*)GetComponentByClass(USkeletalMeshComponent::StaticClass());
-		if (mesh)
-		{
-			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			mesh->SetSimulatePhysics(true);
-		}
+		Ragdollize();
 		ShowGameOverScreen();
 	}
 }

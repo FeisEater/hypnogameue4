@@ -6,10 +6,10 @@
 
 void HActionSleep::RunAction()
 {
-	if (!m_owner->IsHypnotized())
+	if (!m_owner->IsAsleep())
 	{
 		AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
-		m_owner->Hypnotize(plr, false);
+		m_owner->Sleep(plr, false);
 		Consume();
 	}
 }

@@ -3,7 +3,7 @@
 #pragma once
 #include "HAction.h"
 /**
- * 
+ * Don't do anything. Still consumes counter when invoked.
  */
 class HYPNOTOAD_API HActionIgnore : public HAction
 {
@@ -19,5 +19,6 @@ protected:
 	virtual void RunAction() override;
 
 private:
+	/** To not consume counter every tick, consume it via timer. */
 	FTimerHandle m_timer;
 };

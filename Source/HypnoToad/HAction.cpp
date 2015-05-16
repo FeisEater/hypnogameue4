@@ -6,7 +6,7 @@
 
 void HAction::Execute()
 {
-	if (!m_workWhileHypnotized && m_owner->IsHypnotized())
+	if (!m_workWhileHypnotized && m_owner->IsAsleep())
 		return;
 	if (!m_overrideAttackState && m_owner->IsAttacking())
 		return;
@@ -15,52 +15,67 @@ void HAction::Execute()
 
 void HAction::CollectParameters()
 {
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
-	plr->StartHypnotizing();
+	DefaultParameterCollection();
 }
 
 void HAction::SetActorParameter(AActor* actor)
 {
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
-	plr->StartHypnotizing();
+	DefaultParameterCollection();
 }
 
 void HAction::SetVectorParameter(TSharedPtr<FVector> vector)
 {
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
-	plr->StartHypnotizing();
+	DefaultParameterCollection();
 }
 
 void HAction::SetStringParameter(FString string)
 {
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
-	plr->StartHypnotizing();
+	DefaultParameterCollection();
 }
 
 void HAction::SetSoundParameter(USound* sound)
 {
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
-	plr->StartHypnotizing();
+	DefaultParameterCollection();
 }
 
 void HAction::Consume()
 {
 	--m_actionCount;
-	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::SanitizeFloat(m_actionCount));
+	HTrigger* trigger = GetTrigger();
+	if (trigger == NULL)
+		return;
+	//Show consumption event in gui
+	if (trigger->GetDefaultAction() != this)
+		m_owner->ShowTriggerConsumption(GetMenuName());
+
 	if (m_actionCount <= 0)
 	{
-		for (HTrigger* t : m_owner->GetActiveTriggers())
-		{
-			if (t->GetAction() == this)
-			{
-				t->DiscardTrigger();
-				return;
-			}
-		}
+		trigger->DiscardTrigger();
 	}
 }
 
+/** In superclass, define name as counter in parenthesis. */
 FString HAction::GetMenuName()
 {
 	return "(" + FString::FromInt(m_actionCount) + ")";
+}
+
+HTrigger* HAction::GetTrigger()
+{
+	for (HTrigger* t : m_owner->GetActiveTriggers())
+	{
+		if (t->GetAction() == this)
+			return t;
+	}
+	return NULL;
+}
+
+AHypnoToadCharacter* HAction::GetPlayer()
+{
+	return (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+}
+
+void HAction::DefaultParameterCollection()
+{
+	GetPlayer()->StartHypnotizing();
 }

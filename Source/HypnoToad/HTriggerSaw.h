@@ -4,22 +4,15 @@
 
 #include "HTrigger.h"
 /**
- * 
+ * Triggers when certain actor is seen
  */
 
 class HYPNOTOAD_API HTriggerSaw : public HTrigger
 {
 public:
 	HTriggerSaw(AAICharacter* owner, AActor* actor) : HTrigger(owner), m_actor(actor) {}
-	~HTriggerSaw()
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Destroying trigger saw"));
-	}
 
-	FString GetMenuName() override
-	{
-		return "When saw...";
-	}
+	FString GetMenuName() override;
 	HTrigger* CreateTrigger() override
 	{
 		return new HTriggerSaw(m_owner, m_actor);
@@ -31,6 +24,7 @@ protected:
 	virtual bool IsTriggered() override;
 
 private:
+	/** Actor to see */
 	AActor* m_actor;
 
 };

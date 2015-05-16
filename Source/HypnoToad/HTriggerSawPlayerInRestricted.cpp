@@ -6,7 +6,6 @@
 
 bool HTriggerSawPlayerInRestricted::IsTriggered()
 {
-	APlayerController* plrController = *(m_owner->GetWorld()->GetPlayerControllerIterator());
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
+	AHypnoToadCharacter* plr = GetPlayer();
 	return m_owner->CanSee(plr) && plr->InRestrictedArea;
 }

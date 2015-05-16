@@ -4,7 +4,7 @@
 
 #include "HAction.h"
 /**
- * 
+ * Freeze in place for a bit
  */
 class HYPNOTOAD_API HActionFreeze : public HAction
 {

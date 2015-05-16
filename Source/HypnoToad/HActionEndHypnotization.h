@@ -4,7 +4,7 @@
 #include "HAction.h"
 
 /**
- * 
+ * Wake up from sleep
  */
 class HYPNOTOAD_API HActionEndHypnotization : public HAction
 {

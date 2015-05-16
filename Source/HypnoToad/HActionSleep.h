@@ -4,7 +4,7 @@
 #include "HAction.h"
 
 /**
- * 
+ * Fall asleep
  */
 class HYPNOTOAD_API HActionSleep : public HAction
 {

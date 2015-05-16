@@ -5,7 +5,7 @@
 #include "HAction.h"
 
 /**
- * 
+ * Detour to some point from default path
  */
 class HYPNOTOAD_API HActionDetour : public HAction
 {
@@ -21,6 +21,7 @@ public:
 	void CollectParameters() override;
 	void SetActorParameter(AActor* actor) override
 	{
+		//Get actor parameter from gui.
 		m_targetPosition = TSharedPtr<FVector>(new FVector(actor->GetActorLocation()));
 		HAction::SetActorParameter(actor);
 	}
@@ -34,7 +35,10 @@ protected:
 	virtual void RunAction() override;
 
 private:
+	/** Location to which npc will detour to. */
 	TSharedPtr<FVector> m_targetPosition;
+	/** Temporary pathpoint object at target position. */
 	class APathPoint* m_detourPoint;
+	/** Maximum distance at which npc will detour. */
 	float m_maxDistance;
 };

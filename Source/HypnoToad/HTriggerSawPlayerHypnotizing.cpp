@@ -7,12 +7,12 @@
 
 bool HTriggerSawPlayerHypnotizing::IsTriggered()
 {
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)m_owner->GetWorld()->GetFirstPlayerController()->GetCharacter();
+	AHypnoToadCharacter* plr = GetPlayer();
 	if (!m_owner->CanSee(plr))
 		return false;
-	if (plr->IsHypnotizing())
+	if (plr->IsEscorting())
 		return true;
-	if (plr->HasConversationWith() && plr->HasConversationWith()->IsHypnotized())
+	if (plr->HasConversationWith() && plr->HasConversationWith()->IsAsleep())
 		return true;
 	return false;
 }

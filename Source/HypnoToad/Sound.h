@@ -4,7 +4,7 @@
 #include "Sound.generated.h"
 
 /**
- * 
+ * Sound object used to manipulate ai characters.
  */
 
 UCLASS(Blueprintable)
@@ -16,30 +16,30 @@ public:
 	USound(const FObjectInitializer& ObjectInitializer);
 	virtual ~USound() {}
 
+	//Static function to broadcast sound to every ai character.
 	UFUNCTION(BlueprintCallable, Category = "Sound")
 	static void BroadCastSound(UWorld* world, USound* sound);
 
+	//Operator used when comparing what kind of sound ai character is 'expecting'
 	bool operator==(USound* rhs)
 	{
 		if (!IsValidLowLevel())
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("left side fucked up"));
 			return false;
-		}
 		if (!rhs->IsValidLowLevel())
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, TEXT("right side fucked up"));
 			return false;
-		}
+		//Use virtual function to support polymorphism
 		return Compare(rhs);
 	}
 
+	//Sound origin. Is not considered when comparing sound objects
 	UPROPERTY(BlueprintReadOnly, Category = "Sound")
 	FVector Origin;
 
+	//Sound range. Is not considered when comparing sound objects
 	UPROPERTY(BlueprintReadOnly, Category = "Sound")
 	float Range;
 
-private:
+protected:
+	//Inherit this to define custom comparison rules.
 	virtual bool Compare(USound* rhs) { return false; }
 };

@@ -13,9 +13,10 @@ class HYPNOTOAD_API UWord : public USound
 public:
 	UWord(const FObjectInitializer& ObjectInitializer);
 
+	//Words have text content
 	UPROPERTY(BlueprintReadOnly, Category = "Sound")
 	FString Content;
 
-private:
+protected:
 	bool Compare(USound* rhs) override;
 };

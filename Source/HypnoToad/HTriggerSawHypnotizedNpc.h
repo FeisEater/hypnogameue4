@@ -5,16 +5,12 @@
 #include "HTrigger.h"
 
 /**
- * 
+ * Triggered when saw another npc sleeping
  */
 class HYPNOTOAD_API HTriggerSawHypnotizedNpc : public HTrigger
 {
 public:
 	HTriggerSawHypnotizedNpc(AAICharacter* owner) : HTrigger(owner) {}
-	~HTriggerSawHypnotizedNpc()
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Destroying trigger saw hypnotized npc"));
-	}
 	TSharedPtr<FVector> GetHypnotizedNpcLocation();
 
 	FString GetMenuName() override
@@ -28,5 +24,7 @@ public:
 
 protected:
 	virtual bool IsTriggered() override;
+
+private:
 	FVector m_hypnotizedNpcLocation;
 };

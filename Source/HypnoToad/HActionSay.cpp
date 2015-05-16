@@ -7,6 +7,7 @@
 
 void HActionSay::RunAction()
 {
+	//Use timer for consumption.
 	if (m_owner->GetWorldTimerManager().GetTimerRemaining(m_timer) <= 0)
 	{
 		m_sound->Origin = m_owner->GetActorLocation();
@@ -18,16 +19,16 @@ void HActionSay::RunAction()
 
 void HActionSay::CollectParameters()
 {
-	APlayerController* plrController = *(m_owner->GetWorld()->GetPlayerControllerIterator());
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
-	plr->ShowTextParameterGui();
+	GetPlayer()->ShowTextParameterGui();
 }
 
 void HActionSay::SetSoundParameter(USound* sound)
 {
 	USound* oldSound = m_sound;
 	m_sound = sound;
+	//Prevent new sound from being garbage collected
 	m_sound->AddToRoot();
+	//Force old sound deletion
 	if (oldSound->IsValidLowLevel())
 		oldSound->ConditionalBeginDestroy();
 	HAction::SetSoundParameter(sound);

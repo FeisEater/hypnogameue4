@@ -13,9 +13,10 @@ void USound::BroadCastSound(UWorld* world, USound* sound)
 {
 	for (TActorIterator<AAICharacter> ActorItr(world); ActorItr; ++ActorItr)
 	{
-		if ((sound->Origin - ActorItr->GetActorLocation()).Size() < sound->Range)
+		if (FVector::Dist(sound->Origin, ActorItr->GetActorLocation()) < sound->Range)
 			ActorItr->HearSound(sound);
 	}
+	//Show sound notifier in gui through event call
 	APlayerController* plrController = *(world->GetPlayerControllerIterator());
 	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
 	plr->ShowSoundNotifier(sound);

@@ -4,7 +4,7 @@
 #include "HAction.h"
 
 /**
- * 
+ * Shoot straight ahead.
  */
 class HYPNOTOAD_API HActionShoot : public HAction
 {
@@ -20,5 +20,6 @@ protected:
 	virtual void RunAction() override;
 
 private:
+	/** To not consume counter every tick, consume it via timer. */
 	FTimerHandle m_timer;
 };

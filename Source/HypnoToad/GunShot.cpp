@@ -10,5 +10,6 @@ UGunShot::UGunShot(const FObjectInitializer& ObjectInitializer) : Super(ObjectIn
 
 bool UGunShot::Compare(USound* rhs)
 {
+	//A gunshot is a gunshot
 	return rhs->IsA(UGunShot::StaticClass());
 }

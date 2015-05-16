@@ -7,6 +7,7 @@
 class AAICharacter;
 class HTrigger;
 
+/** Main player character */
 UCLASS(config=Game)
 class AHypnoToadCharacter : public ACharacter
 {
@@ -62,19 +63,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void ChangeTriggersActionThroughIndex(int32 index);
 
-	/** Passes gunshot sound as parameter for pending trigger */
+	/** Passes gunshot sound as parameter for pending trigger/action */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void PassGunShotParameter();
 
-	/** Passes word sound as parameter for pending trigger */
+	/** Passes word sound as parameter for pending trigger/action */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void PassWordParameter(FString word);
 
-	/** Passes actor as parameter for pending action */
+	/** Passes actor as parameter for pending trigger/action */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void PassActorParameter(AActor* actor);
 
-	/** Passes location as parameter for pending action */
+	/** Passes location as parameter for pending trigger/action */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void PassLocationParameter(FVector location);
 
@@ -86,27 +87,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	TArray<AActor*> GetMarkedLocations();
 
+	/** Fetches stickers placed by player */
 	TArray<AActor*> GetStickers();
 
 	/** Checks if trigger provides correct parameter for action */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	bool TriggerReturnsParameter();
 
-	/** Passes parameter provided by trigger to action */
+	/** Passes parameter provided by trigger to action (not used currently) */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void PassTriggersParameter();
 
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = UI)
-	//TSubclassOf<UUserWidget> WidgetTemplate;
-
-	//UPROPERTY()
-	//UUserWidget* WidgetInstance;
-
-	/** Texture for suggestion stickers */
+	/** Texture for stickers */
 	UPROPERTY(EditAnywhere, Category = GamePlay)
 	UMaterialInterface* StickerMaterial;
 
-	/** Show gui element for conversation. */
+	/** Show or hide gui element for conversation. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowConversationGUI(bool show);
 
@@ -114,7 +110,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowSoundParameterGui();
 
-	/** Show actor configuring gui element. */
+	/** Show actor configuring gui element. actors holds actor array. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowActorParameterGui(const TArray<AActor*>& actors);
 
@@ -122,7 +118,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowTextParameterGui();
 
-	/** Show sound configuring gui element. */
+	/** Show location configuring gui element. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowLocationParameterGui();
 
@@ -138,21 +134,29 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GUI")
 	void ShowHypnotizationProgress();
 
+	/** Broadcast a word-type sound */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void SayWord(FString word);
 
+	/** Start hypnotization process */
 	void StartHypnotizing();
+	/** End hypnotization process and create trigger-action pair */
 	void EndHypnotization();
 
+	/** Calculate hypnotization status to use for gui progress bar (values between 0.0 - 1.0) */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	float HypnotizationDelayStatus();
 
+	/** Player is currently located in restricted area */
 	UPROPERTY(BlueprintReadWrite, Category = "HypnoToad")
 	bool InRestrictedArea;
 
-	bool IsHypnotizing();
+	/** Player is currently escorting sleeping ai character */
+	bool IsEscorting();
 
+	/** ai character player is currently having conversation with */
 	AAICharacter* HasConversationWith();
+	void StartConversation();
 	void EndConversation();
 
 	void LoseHealth();
@@ -169,6 +173,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	int32 GetHealth();
 
+	/** true if npc player is currently having conversation with has room for more hypnotization */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	bool NpcHasRoomForTriggers();
 
@@ -210,14 +215,27 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 private:
+	//Following are input hooks
+	void ToggleConversation();
+	void ToggleSay();
+	void PlaceSticker();
+	void PlaceMarker();
+	void PutToSleep();
+
 	void SetGUIMode(bool isGUI);
+	/** Check if npc is currently looked at, effectively discovering it to use as hypnotization parameter */
 	void DiscoverNPCs();
+	void CreateSticker(FHitResult& Hit);
+	void Ragdollize();
+	/** Check with whom player can interact when willing */
 	AAICharacter* InterractsWithNPC(float range);
+	
 	AAICharacter* m_conversationWith;
-	AAICharacter* m_hypnotized;
+	AAICharacter* m_sleepingEscort;
 	UClass* PathPointMarkerClass;
 	bool m_InGuiMode;
 	float m_hypnoseDelay;
+	/** when true, wait for hypnotization progress */
 	bool m_creatingTrigger;
 	int32 m_health;
 };

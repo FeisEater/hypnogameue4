@@ -18,8 +18,8 @@ bool HTriggerSaw::IsTriggered()
 
 void HTriggerSaw::CollectParameters()
 {
-	APlayerController* plrController = *(m_owner->GetWorld()->GetPlayerControllerIterator());
-	AHypnoToadCharacter* plr = (AHypnoToadCharacter*)plrController->GetCharacter();
+	//Npc may see stickers, other npc's or player
+	AHypnoToadCharacter* plr = GetPlayer();
 	TArray<AActor*> actorsToSee = plr->GetStickers();
 	actorsToSee += plr->GetNpcAttackTargets();
 	plr->ShowActorParameterGui(actorsToSee);
@@ -29,4 +29,12 @@ void HTriggerSaw::SetActorParameter(AActor* actor)
 {
 	m_actor = actor;
 	HTrigger::SetActorParameter(actor);
+}
+
+FString HTriggerSaw::GetMenuName()
+{
+	FString actorName = "...";
+	if (m_actor)
+		actorName = m_actor->GetName();
+	return "When saw " + actorName;
 }

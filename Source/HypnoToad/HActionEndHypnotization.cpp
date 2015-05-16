@@ -6,9 +6,9 @@
 
 void HActionEndHypnotization::RunAction()
 {
-	if (m_owner->IsHypnotized())
+	if (m_owner->IsAsleep())
 	{
-		m_owner->EndHypnotization();
+		m_owner->EndSleep();
 		Consume();
 	}
 }

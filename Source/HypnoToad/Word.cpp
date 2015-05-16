@@ -10,6 +10,7 @@ UWord::UWord(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitiali
 
 bool UWord::Compare(USound* rhs)
 {
+	//Two words are same if they have same text content
 	if (!rhs->IsA(UWord::StaticClass()))
 		return false;
 	UWord* rhsWord = (UWord*)rhs;
