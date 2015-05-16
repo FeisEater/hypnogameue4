@@ -112,6 +112,8 @@ public:
 	void PrepareActiveTriggerViaIndex(int32 index);
 	/** Set action at given index as pending. */
 	void PrepareActionViaIndex(int32 index);
+	/** Removes active trigger via index */
+	void RemoveActiveTriggerViaIndex(int32 index);
 
 	HAction* GetPendingAction()
 	{

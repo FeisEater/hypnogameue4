@@ -63,6 +63,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void ChangeTriggersActionThroughIndex(int32 index);
 
+	/** Removes active trigger from interracted npc via index */
+	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
+	void RemoveActiveTriggerThroughIndex(int32 index);
+
 	/** Passes gunshot sound as parameter for pending trigger/action */
 	UFUNCTION(BlueprintCallable, Category = "HypnoToad")
 	void PassGunShotParameter();

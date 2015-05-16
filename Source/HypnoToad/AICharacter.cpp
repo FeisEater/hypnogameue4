@@ -578,6 +578,16 @@ void AAICharacter::PrepareActiveTriggerViaIndex(int32 index)
 	m_pendingTrigger = m_triggers[index];
 }
 
+void AAICharacter::RemoveActiveTriggerViaIndex(int32 index)
+{
+	if (m_triggers[index]->GetDefaultAction() != NULL)
+	{
+		m_triggers[index]->DiscardTrigger();	//This will revert to default action
+		return;
+	}
+	m_triggers.RemoveAt(index);
+}
+
 void AAICharacter::AttachPendingTrigger()
 {
 	if (!m_pendingTrigger || !m_pendingAction)

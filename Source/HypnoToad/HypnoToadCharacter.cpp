@@ -7,6 +7,7 @@
 #include "HTrigger.h"
 #include "Word.h"
 #include "GunShot.h"
+#include "Sticker.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AHypnoToadCharacter
@@ -51,9 +52,9 @@ AHypnoToadCharacter::AHypnoToadCharacter(const FObjectInitializer& ObjectInitial
 	//Following block written by me
 
 	//Find blueprint class to spawn later as location markers
-	ConstructorHelpers::FObjectFinder<UBlueprint> Blueprint(TEXT("Blueprint'/Game/MyBlueprints/PathPointMarker_Blueprint.PathPointMarker_Blueprint'"));
-	if (Blueprint.Object != NULL)
-		PathPointMarkerClass = (UClass*)Blueprint.Object->GeneratedClass;
+	ConstructorHelpers::FClassFinder<APathPoint> Marker(TEXT("/Game/MyBlueprints/PathPointMarker_Blueprint"));
+	if (Marker.Class != NULL)
+		PathPointMarkerClass = Marker.Class;
 
 	//Initialize variable values
 	m_InGuiMode = false;
@@ -132,13 +133,9 @@ void AHypnoToadCharacter::CreateSticker(FHitResult& Hit)
 {
 	FRotator rot = (-Hit.ImpactNormal).Rotation();
 	rot.Roll = 90;	//this is correct rotation for some reason
-	ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Hit.ImpactPoint + Hit.ImpactNormal * 20, rot);
+	ASticker* decal = GetWorld()->SpawnActor<ASticker>(Hit.ImpactPoint + Hit.ImpactNormal * 20, rot);
 	decal->GetDecal()->SetDecalMaterial(StickerMaterial);
 	decal->SetActorScale3D(FVector(30, 30, 30));
-	//Box collision needed so it is visible to ai characters
-	decal->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-	decal->GetBoxComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 }
 
 void AHypnoToadCharacter::PlaceSticker()
@@ -152,7 +149,7 @@ void AHypnoToadCharacter::PlaceSticker()
 	if (GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Visibility, Params) && SurfaceIsWall(Hit))
 	{
 		//When looking at placed sticker, remove it.
-		if (!HitBrush(Hit) && Hit.Actor.Get()->IsA(ADecalActor::StaticClass()))
+		if (!HitBrush(Hit) && Hit.Actor.Get()->IsA(ASticker::StaticClass()))
 		{
 			GetWorld()->DestroyActor(Hit.Actor.Get());
 		}
@@ -443,6 +440,15 @@ void AHypnoToadCharacter::ChangeTriggersActionThroughIndex(int32 index)
 	ShowActionsGui();
 }
 
+void AHypnoToadCharacter::RemoveActiveTriggerThroughIndex(int32 index)
+{
+	if (m_conversationWith == NULL)
+		return;
+	m_conversationWith->RemoveActiveTriggerViaIndex(index);
+	ShowConversationGUI(false);
+	ShowConversationGUI(true);
+}
+
 void AHypnoToadCharacter::PassGunShotParameter()
 {
 	if (m_conversationWith == NULL || m_conversationWith->GetPendingTrigger() == NULL)
@@ -508,7 +514,7 @@ TArray<AActor*> AHypnoToadCharacter::GetMarkedLocations()
 TArray<AActor*> AHypnoToadCharacter::GetStickers()
 {
 	TArray<AActor*> result;
-	for (TActorIterator<ADecalActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+	for (TActorIterator<ASticker> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 		result.Add(*ActorItr);
 	return result;
 }

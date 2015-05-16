@@ -5,11 +5,20 @@
 
 
 // Sets default values
-ASticker::ASticker()
+ASticker::ASticker(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+	
+	BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollider"));
+	BoxCollider->AttachTo(RootComponent);
+	BoxCollider->InitBoxExtent(FVector(1, 1, 1));
 
+	//Box collision needed so it is visible to ai characters
+	BoxCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BoxCollider->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	BoxCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 }
 
 // Called when the game starts or when spawned
