@@ -5,7 +5,7 @@
 
 UWord::UWord(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	Range = 700;
+	Range = 1500;
 }
 
 bool UWord::Compare(USound* rhs)

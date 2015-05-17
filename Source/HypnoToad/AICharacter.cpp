@@ -77,23 +77,21 @@ void AAICharacter::SetupDefaultTriggersActions()
 	m_availableTriggers.Add(new HTriggerNear(this, NULL));
 
 	//Action templates to use through conversation
-	m_availableLightActions.Add(new HActionIgnore(this));
 	m_availableLightActions.Add(new HActionDetour(this, NULL, 1000));
 	m_availableLightActions.Add(new HActionFreeze(this));
 	m_availableLightActions.Add(new HActionSay(this, NULL));
 	m_availableLightActions.Add(new HActionShoot(this));
-	m_availableLightActions.Add(new HActionSleep(this, NULL));
 
 	//Action templates to use through sleep
-	m_availableHeavyActions.Add(new HActionIgnore(this));
 	m_availableHeavyActions.Add(new HActionEndHypnotization(this));
-	m_availableHeavyActions.Add(new HActionAttack(this, NULL));
-	m_availableHeavyActions.Add(new HActionDetour(this, NULL));
-	m_availableHeavyActions.Add(new HActionFreeze(this));
-	m_availableHeavyActions.Add(new HActionSay(this, NULL));
-	m_availableHeavyActions.Add(new HActionForgetEnemy(this, 5, true));
-	m_availableHeavyActions.Add(new HActionShoot(this));
+	m_availableHeavyActions.Add(new HActionIgnore(this));
 	m_availableHeavyActions.Add(new HActionSleep(this, NULL));
+	m_availableHeavyActions.Add(new HActionAttack(this, NULL));
+	m_availableHeavyActions.Add(new HActionForgetEnemy(this, 5, true));
+	m_availableHeavyActions.Add(new HActionDetour(this, NULL, 7000));
+	m_availableHeavyActions.Add(new HActionFreeze(this, 5));
+	m_availableHeavyActions.Add(new HActionSay(this, NULL));
+	m_availableHeavyActions.Add(new HActionShoot(this));
 }
 
 void AAICharacter::Attack()
@@ -340,6 +338,9 @@ FVector AAICharacter::ApplySpread(FVector Dir)
 
 void AAICharacter::Shoot()
 {
+	//Can't shoot if not armed
+	if (!Armed)
+		return;
 	//Don't scan when shooting
 	m_scanPosition = 0;
 	//Direction is changed even if it's not the time to shoot yet due to rate of fire

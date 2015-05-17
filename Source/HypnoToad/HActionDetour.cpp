@@ -45,9 +45,9 @@ void HActionDetour::RunAction()
 
 void HActionDetour::CollectParameters()
 {
-	//Collect marked location from gui, also other npc's
+	//Collect marked location from gui
 	AHypnoToadCharacter* plr = GetPlayer();
 	TArray<AActor*> locations = plr->GetMarkedLocations();
-	locations += plr->GetNpcAttackTargets();
+	//locations += plr->GetNpcAttackTargets();
 	plr->ShowActorParameterGui(locations);
 }

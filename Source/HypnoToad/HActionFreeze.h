@@ -9,13 +9,17 @@
 class HYPNOTOAD_API HActionFreeze : public HAction
 {
 public:
-	HActionFreeze(AAICharacter* owner, float actionCount = 5, bool overrideAttack = false) : HAction(owner, overrideAttack)
+	HActionFreeze(AAICharacter* owner, float wait = 1, float actionCount = 5, bool overrideAttack = false) : HAction(owner, overrideAttack)
 	{
 		m_actionCount = actionCount;
+		m_waitTime = wait;
 	}
 	FString GetMenuName() override { return "Freeze in place" + HAction::GetMenuName(); }
-	HAction* CreateAction() override { return new HActionFreeze(m_owner, m_actionCount, m_overrideAttackState); }
+	HAction* CreateAction() override { return new HActionFreeze(m_owner, m_waitTime, m_actionCount, m_overrideAttackState); }
 
 protected:
 	virtual void RunAction() override;
+
+private:
+	float m_waitTime;
 };

@@ -8,7 +8,7 @@ void HActionFreeze::RunAction()
 {
 	if (!m_owner->IsWaiting())
 	{
-		m_owner->Wait(1);
+		m_owner->Wait(m_waitTime);
 		Consume();
 	}
 }
