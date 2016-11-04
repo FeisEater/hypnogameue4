@@ -17,6 +17,8 @@ Mainly project was motivated by desire to study unreal engine 4.
 - F - start conversation/hypnotize
 - Q - place location marker
 - E - place sticker
+- ESC - quit game
+- F1 - restart game
 
 # Manual
 
